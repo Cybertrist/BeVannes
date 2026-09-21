@@ -1,127 +1,101 @@
+<div align="center">
+
 # BeVannes
 
-BeVannes est une application révolutionnaire de médias sociaux qui redéfinit l'interaction avec notre environnement. Combinant géolocalisation, gamification et découverte culturelle, elle offre une expérience unique et engageante pour ses utilisateurs.
+**BeReal rencontre GeoGuessr : un lieu par jour, il faut y aller pour marquer.**
 
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev/)
+[![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=flat-square&logo=dart&logoColor=white)](https://dart.dev/)
+[![Firebase](https://img.shields.io/badge/Firebase-backend-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Licence](https://img.shields.io/badge/Licence-MIT-1F6FEB?style=flat-square)](LICENSE)
 
-## Fonctionnalités
+</div>
 
-### Modules et interactions principales
+---
 
-#### Module principal : Spot du Jour
-- Propose chaque jour un lieu unique à découvrir, sélectionné aléatoirement.
-- Validation géolocalisée pour garantir la présence physique des utilisateurs.
-- Collecte de points et contribution au classement global.
-- Chaque spot est enrichi d'informations culturelles et historiques pour une expérience à la fois ludique et éducative.
+Chaque jour, l'application tire un lieu au sort dans Vannes et ses environs. Pour marquer des points, il faut s'y rendre physiquement : la position GPS est comparée à celle du spot, et la photo n'est validée que si vous y êtes vraiment. Chaque lieu s'accompagne d'une note historique ou culturelle, ce qui transforme la partie en visite guidée sans le vouloir.
 
-![Capture d'écran 2025-01-07 214646](https://github.com/user-attachments/assets/60fa2189-ca66-4503-a74e-9ef0048cd765)
+L'idée de départ : on passe devant les mêmes rues tous les jours sans jamais s'arrêter. Une contrainte ludique suffit parfois à changer ça.
 
+## Fonctionnement
 
-#### Partage intuitif de photos
-- Capture et partage de photos directement via l'application.
-- Association automatique des photos aux lieux via la géolocalisation.
-- Notifications et validations en temps réel pour une expérience fluide.
+| | |
+|:--|:--|
+| **Spot du jour** | Un lieu tiré au sort, le même pour tout le monde, renouvelé chaque jour |
+| **Validation géolocalisée** | La photo ne compte que si le GPS confirme la présence sur place |
+| **Classement** | Points cumulés, médailles et insignes pour les plus assidus |
+| **Notifications** | Envoyées à une heure aléatoire, comme BeReal — pas le temps de préparer sa photo |
 
-![Capture d'écran 2025-01-07 214726](https://github.com/user-attachments/assets/46b086a4-64bc-4796-88f6-9940040e50ab)
+<div align="center">
 
-![Capture d'écran 2025-01-07 214330](https://github.com/user-attachments/assets/73a00643-a628-4820-98fb-c721f88d1acb)
+![Spot du jour](https://github.com/user-attachments/assets/60fa2189-ca66-4503-a74e-9ef0048cd765)
+![Partage de photo](https://github.com/user-attachments/assets/46b086a4-64bc-4796-88f6-9940040e50ab)
+![Classement](https://github.com/user-attachments/assets/6d221ff1-1401-402e-bd8b-e078556d8c1e)
 
+</div>
 
-#### Gamification avancée
-- Système de classement dynamique basé sur les points accumulés.
-- Médailles et insignes pour récompenser les meilleures performances.
-- Récompenses visuelles pour encourager la compétition saine entre utilisateurs.
+## Sous le capot
 
-![Capture d'écran 2025-01-07 214544](https://github.com/user-attachments/assets/6d221ff1-1401-402e-bd8b-e078556d8c1e)
+Développé avec Flutter, prototypé sur FlutterFlow, adossé à Firebase pour l'authentification, la base temps réel et les tâches planifiées.
 
+Trois fonctions maison portent la logique de jeu :
 
-#### Notifications quotidiennes
-- Envoi de notifications motivantes ou informatives à des heures aléatoires pour engager les utilisateurs.
+| Fonction | Rôle |
+|:--|:--|
+| `compareLatLng` | Compare la position de l'utilisateur à celle du spot, avec une tolérance en mètres |
+| `sameDay` | Vérifie que la tentative concerne bien le spot du jour en cours |
+| `dateIsThisDay` | Normalise les dates entre fuseau de l'appareil et horodatage serveur |
 
-
-
-## Prérequis
-
-Pour utiliser ou développer BeVannes, les éléments suivants sont requis :
-
-- **Flutter** : Framework principal pour le développement multiplateforme.
-- **FlutterFlow** : Utilisé pour le prototypage et l’intégration rapide.
-- **API Géolocalisation** : Nécessaire pour la validation des positions.
-- Un compte développeur Firebase pour le backend et la gestion des données.
-
+C'est là que tout se joue : une tolérance trop large et on valide depuis son canapé, trop étroite et le bruit GPS en ville rend le jeu injouable.
 
 ## Installation
 
-1. **Cloner le projet :**
-   ```bash
-   git clone <URL_DU_DEPOT>
-   cd BeVannes
-   ```
+```bash
+git clone https://github.com/Cybertrist/BeVannes.git
+cd BeVannes
+flutter pub get
+```
 
-2. **Installer les dépendances :**
-   Configurez l’environnement Flutter et utilisez FlutterFlow pour générer les composants.
+### Firebase
 
-3. **Configurer Firebase :**
-   - Créez un projet Firebase.
-   - Ajoutez le fichier `google-services.json` (Android) et `GoogleService-Info.plist` (iOS) à leurs dossiers respectifs.
+Le projet a besoin de votre propre projet Firebase — les fichiers de configuration ne sont pas versionnés.
 
-4. **Exécuter l’application :**
-   ```bash
-   flutter run
-   ```
+1. Créez un projet sur la [console Firebase](https://console.firebase.google.com/).
+2. Activez **Authentication**, **Realtime Database** et **Storage**.
+3. Téléchargez `google-services.json` et placez-le dans `android/app/`.
+4. Pour iOS, `GoogleService-Info.plist` va dans `ios/Runner/`.
 
+> Les clés d'API Firebase côté client ne sont pas des secrets — elles sont lisibles dans tout APK. Ce qui protège réellement les données, ce sont les **règles de sécurité** Realtime Database et Storage. Configurez-les avant d'ouvrir l'application à qui que ce soit.
 
-## Configuration
+### Lancement
 
-### Gestion des Spots du Jour
-- Le fichier `data/spots.json` contient les lieux prédéfinis.
-- Ajoutez vos propres lieux au format :
-  ```json
-  {
-    "spots": [
-      {
-        "name": "Tour Eiffel",
-        "latitude": 48.8584,
-        "longitude": 2.2945,
-        "description": "Monument emblématique de Paris."
-      }
-    ]
-  }
-  ```
+```bash
+flutter run
+```
 
-### Notifications automatisées
-- Les notifications sont planifiées de manière aléatoire chaque jour.
+## Ajouter des lieux
 
-## Fonctionnalités techniques
+Les spots sont décrits dans `data/spots.json` :
 
-### Modules personnalisés
-- **compareLatLng** : Valide les coordonnées géographiques entre le lieu et l’utilisateur.
-- **sameDay** : Vérifie si la date courante correspond au Spot du Jour.
-- **dateIsThisDay** : Assure la cohérence des dates.
+```json
+{
+  "spots": [
+    {
+      "name": "Les remparts",
+      "latitude": 47.6553,
+      "longitude": -2.7601,
+      "description": "Fortifications médiévales, parmi les mieux conservées de Bretagne."
+    }
+  ]
+}
+```
 
-### Backend
-- Firebase Realtime Database pour la gestion des utilisateurs, des scores et des lieux.
-- Cloud Functions pour les tâches planifiées.
+## Limites
 
+- Le périmètre couvert est Vannes et ses alentours ; ailleurs, il n'y a rien à découvrir.
+- La validation repose sur le GPS de l'appareil, qui reste falsifiable par une application de position fictive. Une vérification sérieuse demanderait un recoupement côté serveur.
+- Le projet est né d'un prototype FlutterFlow : une partie du code généré n'a pas été reprise à la main.
 
-## Contribuer
+---
 
-Les contributions sont les bienvenues pour améliorer BeVannes. Suivez ces étapes :
-
-1. **Forkez le dépôt**.
-2. **Créez une branche :**
-   ```bash
-   git checkout -b feature/nouvelle-fonctionnalite
-   ```
-3. **Soumettez une pull request.**
-
-
-## Ressources utiles
-
-- [Documentation Flutter](https://flutter.dev/docs)
-- [Documentation FlutterFlow](https://docs.flutterflow.io)
-
-
-## Licence
-
-Ce projet est sous licence MIT.
-Pour plus de détails, consultez le fichier [LICENSE](./LICENSE).
+<sub>Projet étudiant · Université Bretagne Sud, Vannes · Tristan Joncour</sub>
