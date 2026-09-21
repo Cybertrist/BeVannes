@@ -1,55 +1,40 @@
 <div align="center">
 
-<img src="docs/banniere.png" alt="BeVannes" width="100%">
-
-
-**BeReal rencontre GeoGuessr : un lieu par jour, il faut y aller pour marquer.**
-
-[![Flutter](https://img.shields.io/badge/Flutter-3.x-02569B?style=flat-square&logo=flutter&logoColor=white)](https://flutter.dev/)
-[![Dart](https://img.shields.io/badge/Dart-3.x-0175C2?style=flat-square&logo=dart&logoColor=white)](https://dart.dev/)
-[![Firebase](https://img.shields.io/badge/Firebase-backend-FFCA28?style=flat-square&logo=firebase&logoColor=black)](https://firebase.google.com/)
-[![Licence](https://img.shields.io/badge/Licence-MIT-1F6FEB?style=flat-square)](LICENSE)
+<img src="docs/banniere.png" alt="BeVannes, BeReal rencontre GeoGuessr" width="100%">
 
 </div>
 
----
+**BeReal rencontre GeoGuessr : un lieu par jour, il faut y aller pour marquer.**
 
 Chaque jour, l'application tire un lieu au sort dans Vannes et ses environs. Pour marquer des points, il faut s'y rendre physiquement : la position GPS est comparée à celle du spot, et la photo n'est validée que si vous y êtes vraiment. Chaque lieu s'accompagne d'une note historique ou culturelle, ce qui transforme la partie en visite guidée sans le vouloir.
 
 L'idée de départ : on passe devant les mêmes rues tous les jours sans jamais s'arrêter. Une contrainte ludique suffit parfois à changer ça.
 
-## Fonctionnement
+<img src="docs/sections/s01.png" alt="01 Fonctionnement" width="100%">
 
-| | |
-|:--|:--|
-| **Spot du jour** | Un lieu tiré au sort, le même pour tout le monde, renouvelé chaque jour |
-| **Validation géolocalisée** | La photo ne compte que si le GPS confirme la présence sur place |
-| **Classement** | Points cumulés, médailles et insignes pour les plus assidus |
-| **Notifications** | Envoyées à une heure aléatoire, comme BeReal, pas le temps de préparer sa photo |
+<img src="docs/schemas/fonctionnement.png" alt="Le spot du jour : un lieu tiré au sort dans Vannes et ses environs, le même pour tout le monde, renouvelé chaque jour. La validation géolocalisée : la photo ne compte que si le GPS confirme la présence sur place, c'est toute la règle du jeu. Le classement : points cumulés, médailles et insignes pour ceux qui sortent vraiment tous les jours. Les notifications : envoyées à une heure aléatoire, comme BeReal, pas le temps de préparer sa photo." width="100%">
 
 <div align="center">
 
-![Spot du jour](https://github.com/user-attachments/assets/60fa2189-ca66-4503-a74e-9ef0048cd765)
-![Partage de photo](https://github.com/user-attachments/assets/46b086a4-64bc-4796-88f6-9940040e50ab)
-![Classement](https://github.com/user-attachments/assets/6d221ff1-1401-402e-bd8b-e078556d8c1e)
+<img src="docs/captures/spot.png" alt="L'écran du spot du jour : la photo du lieu, sa position sur la carte, et le bouton de prise de vue qui devient une validation une fois sur place" width="70%">
+
+<img src="docs/captures/partage.png" alt="L'écran de partage de la photo prise sur place" width="70%">
+
+<img src="docs/captures/classement.png" alt="Le classement des joueurs" width="70%">
 
 </div>
 
-## Sous le capot
+<img src="docs/sections/s02.png" alt="02 Sous le capot" width="100%">
 
 Développé avec Flutter, prototypé sur FlutterFlow, adossé à Firebase pour l'authentification, la base temps réel et les tâches planifiées.
 
-Trois fonctions maison portent la logique de jeu :
+Trois fonctions maison portent la logique de jeu.
 
-| Fonction | Rôle |
-|:--|:--|
-| `compareLatLng` | Compare la position de l'utilisateur à celle du spot, avec une tolérance en mètres |
-| `sameDay` | Vérifie que la tentative concerne bien le spot du jour en cours |
-| `dateIsThisDay` | Normalise les dates entre fuseau de l'appareil et horodatage serveur |
+<img src="docs/schemas/fonctions.png" alt="compareLatLng compare la position de l'utilisateur à celle du spot, avec une tolérance exprimée en mètres. sameDay vérifie que la tentative concerne bien le spot du jour en cours. dateIsThisDay normalise les dates entre le fuseau de l'appareil et l'horodatage du serveur." width="100%">
 
-C'est là que tout se joue : une tolérance trop large et on valide depuis son canapé, trop étroite et le bruit GPS en ville rend le jeu injouable.
+C'est là que tout se joue. Une tolérance trop large et on valide depuis son canapé, trop étroite et le bruit GPS en ville rend le jeu injouable.
 
-## Installation
+<img src="docs/sections/s03.png" alt="03 Installation" width="100%">
 
 ```bash
 git clone https://github.com/Cybertrist/BeVannes.git
@@ -57,9 +42,7 @@ cd BeVannes
 flutter pub get
 ```
 
-### Firebase
-
-Le projet a besoin de votre propre projet Firebase : les fichiers de configuration ne sont pas versionnés.
+**Firebase.** Le projet a besoin de votre propre projet Firebase : les fichiers de configuration ne sont pas versionnés.
 
 1. Créez un projet sur la [console Firebase](https://console.firebase.google.com/).
 2. Activez **Authentication**, **Realtime Database** et **Storage**.
@@ -68,15 +51,13 @@ Le projet a besoin de votre propre projet Firebase : les fichiers de configurati
 
 > Les clés d'API Firebase côté client ne sont pas des secrets, elles sont lisibles dans tout APK. Ce qui protège réellement les données, ce sont les **règles de sécurité** Realtime Database et Storage. Configurez-les avant d'ouvrir l'application à qui que ce soit.
 
-### Lancement
-
 ```bash
 flutter run
 ```
 
-## Ajouter des lieux
+<img src="docs/sections/s04.png" alt="04 Ajouter des lieux" width="100%">
 
-Les spots sont décrits dans `data/spots.json` :
+Les spots sont décrits dans `data/spots.json`.
 
 ```json
 {
@@ -91,11 +72,17 @@ Les spots sont décrits dans `data/spots.json` :
 }
 ```
 
-## Limites
+La `description` n'est pas décorative : c'est elle qui fait la différence entre une chasse au trésor et une visite. Elle mérite qu'on la soigne.
 
-- Le périmètre couvert est Vannes et ses alentours ; ailleurs, il n'y a rien à découvrir.
-- La validation repose sur le GPS de l'appareil, qui reste falsifiable par une application de position fictive. Une vérification sérieuse demanderait un recoupement côté serveur.
-- Le projet est né d'un prototype FlutterFlow : une partie du code généré n'a pas été reprise à la main.
+<img src="docs/sections/s05.png" alt="05 Limites" width="100%">
+
+Le périmètre couvert est Vannes et ses alentours. Ailleurs, il n'y a rien à découvrir.
+
+La validation repose sur le GPS de l'appareil, qui reste falsifiable par une application de position fictive. Une vérification sérieuse demanderait un recoupement côté serveur, sur l'heure de la prise de vue et la cohérence des déplacements.
+
+Le projet est né d'un prototype FlutterFlow, et une partie du code généré n'a pas été reprise à la main.
+
+Écrit en Flutter et Dart, avec Firebase. Licence MIT.
 
 ---
 
