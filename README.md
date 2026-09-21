@@ -1,6 +1,7 @@
 <div align="center">
 
-# BeVannes
+<img src="docs/banniere.png" alt="BeVannes" width="100%">
+
 
 **BeReal rencontre GeoGuessr : un lieu par jour, il faut y aller pour marquer.**
 
