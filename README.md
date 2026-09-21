@@ -24,7 +24,7 @@ L'idée de départ : on passe devant les mêmes rues tous les jours sans jamais 
 | **Spot du jour** | Un lieu tiré au sort, le même pour tout le monde, renouvelé chaque jour |
 | **Validation géolocalisée** | La photo ne compte que si le GPS confirme la présence sur place |
 | **Classement** | Points cumulés, médailles et insignes pour les plus assidus |
-| **Notifications** | Envoyées à une heure aléatoire, comme BeReal — pas le temps de préparer sa photo |
+| **Notifications** | Envoyées à une heure aléatoire, comme BeReal, pas le temps de préparer sa photo |
 
 <div align="center">
 
@@ -58,14 +58,14 @@ flutter pub get
 
 ### Firebase
 
-Le projet a besoin de votre propre projet Firebase — les fichiers de configuration ne sont pas versionnés.
+Le projet a besoin de votre propre projet Firebase : les fichiers de configuration ne sont pas versionnés.
 
 1. Créez un projet sur la [console Firebase](https://console.firebase.google.com/).
 2. Activez **Authentication**, **Realtime Database** et **Storage**.
 3. Téléchargez `google-services.json` et placez-le dans `android/app/`.
 4. Pour iOS, `GoogleService-Info.plist` va dans `ios/Runner/`.
 
-> Les clés d'API Firebase côté client ne sont pas des secrets — elles sont lisibles dans tout APK. Ce qui protège réellement les données, ce sont les **règles de sécurité** Realtime Database et Storage. Configurez-les avant d'ouvrir l'application à qui que ce soit.
+> Les clés d'API Firebase côté client ne sont pas des secrets, elles sont lisibles dans tout APK. Ce qui protège réellement les données, ce sont les **règles de sécurité** Realtime Database et Storage. Configurez-les avant d'ouvrir l'application à qui que ce soit.
 
 ### Lancement
 
