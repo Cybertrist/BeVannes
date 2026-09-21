@@ -36,8 +36,6 @@ C'est là que tout se joue. Une tolérance trop large et on valide depuis son ca
 
 <img src="docs/sections/s03.png" alt="03 Installation" width="100%">
 
-<img src="docs/blocs/01.png" alt="Terminal bash : installation" width="100%">
-
 ```bash
 git clone https://github.com/Cybertrist/BeVannes.git
 cd BeVannes
@@ -53,8 +51,6 @@ flutter pub get
 
 > Les clés d'API Firebase côté client ne sont pas des secrets, elles sont lisibles dans tout APK. Ce qui protège réellement les données, ce sont les **règles de sécurité** Realtime Database et Storage. Configurez-les avant d'ouvrir l'application à qui que ce soit.
 
-<img src="docs/blocs/02.png" alt="Terminal bash : lancer" width="100%">
-
 ```bash
 flutter run
 ```
@@ -62,8 +58,6 @@ flutter run
 <img src="docs/sections/s04.png" alt="04 Ajouter des lieux" width="100%">
 
 Les spots sont décrits dans `data/spots.json`.
-
-<img src="docs/blocs/03.png" alt="Fichier data/spots.json : ajouter un lieu" width="100%">
 
 ```json
 {
