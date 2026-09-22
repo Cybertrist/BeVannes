@@ -1,5 +1,10 @@
 <div align="center">
 
+<p>
+  <img src="docs/langues/fr-on.png" alt="Français, page affichée" width="150" />
+  <a href="README.en.md"><img src="docs/langues/en-off.png" alt="Read this page in English" width="150" /></a>
+</p>
+
 <img src="docs/banniere.png" alt="BeVannes, BeReal rencontre GeoGuessr" width="100%">
 
 </div>

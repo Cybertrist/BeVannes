@@ -1,0 +1,19 @@
+# Sorties de rendu : les images retenues sont recopiées dans docs/ et
+# docs/en/ par installer.sh, le reste n'a pas à être versionné.
+html/
+png/
+sec/
+grid/
+tree/
+langues/
+html-en/
+png-en/
+sec-en/
+grid-en/
+tree-en/
+flow/
+flow-en/
+kyrl/
+kyrl-en/
+sere/
+sere-en/
