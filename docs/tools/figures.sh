@@ -37,13 +37,13 @@ rep bevannes "$A" \
 
 # ------------------------------------------------------ la règle du jeu
 grid bv-jeu "$A" 2 \
-"$(t 'Le spot du jour' "Today's spot")|$(t 'Un lieu tiré au sort dans Vannes et ses environs, le même pour tout le monde, renouvelé chaque jour.' 'A place drawn at random in and around Vannes, the same for everyone, renewed every day.')" \
-"$(t 'La validation géolocalisée' 'Location-checked validation')|$(t "La photo ne compte que si le GPS confirme la présence sur place. C'est toute la règle du jeu." 'The photo only counts if GPS confirms you are there. That is the whole rule of the game.')" \
-"$(t 'Le classement' 'The leaderboard')|$(t 'Points cumulés, médailles et insignes pour ceux qui sortent vraiment tous les jours.' 'Cumulative points, medals and badges for those who really do go out every day.')" \
-"$(t 'Les notifications' 'The notifications')|$(t "Envoyées à une heure aléatoire, comme BeReal. Pas le temps de préparer sa photo." 'Sent at a random time, like BeReal. No time to set up your shot.')"
+"$(t 'Le lieu du jour' "Today's spot")|$(t 'Un lieu de Vannes tiré au sort, le même pour tout le monde, renouvelé à minuit. Chacun revient une fois par cycle.' 'A place in Vannes drawn at random, the same for everyone, renewed at midnight. Each one comes up once per cycle.')" \
+"$(t 'La validation sur place' 'Proof of presence')|$(t "La photo ne compte qu'à moins de cent mètres du lieu, GPS à l'appui. C'est toute la règle du jeu." 'The photo only counts within a hundred metres of the spot, GPS as proof. That is the whole rule of the game.')" \
+"$(t 'Le classement' 'The leaderboard')|$(t 'Dix points par lieu, un bonus pour chaque jour de série. Les photos des autres se dévoilent une fois la sienne publiée.' "Ten points per spot, a bonus for every day in a row. Other players' photos show up once yours is posted.")" \
+"$(t 'Le rappel' 'The reminder')|$(t 'Une heure différente chaque jour, la même pour tous, comme BeReal. Calculée sur le téléphone, sans serveur.' 'A different time every day, the same for everyone, like BeReal. Worked out on the phone, no server involved.')"
 
-# ------------------------------------------------------- les trois fonctions
+# ----------------------------------------------------- ce qui tient le jeu
 grid bv-fonctions "$A" 3 \
-"compareLatLng|$(t "Compare la position de l'utilisateur à celle du spot, avec une tolérance exprimée en mètres." "Compares the user's position to the spot's, with a tolerance expressed in metres.")" \
-"sameDay|$(t "Vérifie que la tentative concerne bien le spot du jour en cours." 'Checks that the attempt really is about the current day&#39;s spot.')" \
-"dateIsThisDay|$(t "Normalise les dates entre le fuseau de l'appareil et l'horodatage du serveur." "Normalises dates between the device timezone and the server timestamp.")"
+"$(t 'Le tirage' 'The draw')|$(t "Un mélange à graine fixe : chaque téléphone calcule le même lieu, sans que personne ne l'écrive dans la base." 'A fixed-seed shuffle: every phone works out the same spot, and nobody has to write it to the database.')" \
+"$(t 'La distance' 'The distance')|$(t 'Haversine, rayon de cent mètres, mesure fraîche au moment de publier. Une position fictive signalée par Android est refusée.' 'Haversine, a hundred metre radius, a fresh fix when posting. A mock location flagged by Android is rejected.')" \
+"$(t 'Les règles' 'The rules')|$(t 'Firestore recalcule série et points à chaque validation. Le téléphone ne peut pas se les attribuer.' 'Firestore recomputes streak and points on every validation. The phone cannot award them to itself.')"

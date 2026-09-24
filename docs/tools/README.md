@@ -38,6 +38,7 @@ ce qui rend impossible d'en corriger une en oubliant l'autre.
 - `pastilles.sh` : les deux pastilles du sélecteur de langue.
 - `langue.sh` : la bascule `LANGUE` et la fonction `t`.
 - `installer.sh` : repose les images rendues dans `docs/` ou `docs/en/`.
+- `telecharger.sh` : le bouton de téléchargement, lien vers le dernier APK des Releases.
 - `tout.sh` : enchaîne tout ce qui précède, dans les deux langues.
 
 ## Ce dont ils dépendent
