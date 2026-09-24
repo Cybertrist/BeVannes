@@ -1,0 +1,104 @@
+rules_version = '2';
+
+// Règles de BeVannes. Le client ne peut rien écrire que le jeu n'autorise :
+// les points se recalculent ici, à l'identique de lib/domain/score.dart.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function connecte() {
+      return request.auth != null;
+    }
+
+    // Même règle que erreurPseudo() dans lib/data/depot.dart.
+    function pseudoValide(p) {
+      return p is string && p.size() >= 3 && p.size() <= 20 && p.matches('^[\p{L}\p{N} ._\-]+$');
+    }
+
+    // Le numéro du jour envoyé par l'appareil (jours depuis 1970, date
+    // locale) doit être celui d'aujourd'hui, à l'heure de Paris : entre la
+    // date UTC et la date UTC deux heures plus tard.
+    function jourValide(j) {
+      let t = request.time.toMillis();
+      return j is int
+        && (j == math.floor(t / 86400000) || j == math.floor((t + 7200000) / 86400000));
+    }
+
+    function serieApres(avant, jour) {
+      return avant.dernierJour == jour - 1 ? avant.serie + 1 : 1;
+    }
+
+    function gainPour(serie) {
+      return 10 + 2 * (serie - 1 > 5 ? 5 : serie - 1);
+    }
+
+    match /joueurs/{uid} {
+      // Le classement est visible de tous les joueurs connectés. Aucune
+      // donnée personnelle ici : l'e-mail reste dans Authentication.
+      allow read: if connecte();
+
+      allow create: if connecte() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['pseudo', 'points', 'serie', 'meilleureSerie', 'validations', 'dernierJour', 'creeLe'])
+        && pseudoValide(request.resource.data.pseudo)
+        && request.resource.data.points == 0
+        && request.resource.data.serie == 0
+        && request.resource.data.meilleureSerie == 0
+        && request.resource.data.validations == 0
+        && request.resource.data.dernierJour == -1
+        && request.resource.data.creeLe == request.time;
+
+      // Deux mises à jour possibles, et seulement celles-là.
+      allow update: if connecte() && request.auth.uid == uid && (changementPseudo() || validation(uid));
+
+      allow delete: if connecte() && request.auth.uid == uid;
+
+      function changementPseudo() {
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['pseudo'])
+          && pseudoValide(request.resource.data.pseudo);
+      }
+
+      // Les points d'une validation : la validation du jour doit être créée
+      // dans la même écriture, et les chiffres doivent tomber juste.
+      function validation(uid) {
+        let avant = resource.data;
+        let apres = request.resource.data;
+        let jour = apres.dernierJour;
+        let serie = serieApres(avant, jour);
+        return apres.diff(avant).affectedKeys().hasOnly(['points', 'serie', 'meilleureSerie', 'validations', 'dernierJour'])
+          && jourValide(jour)
+          && jour > avant.dernierJour
+          && apres.serie == serie
+          && apres.points == avant.points + gainPour(serie)
+          && apres.validations == avant.validations + 1
+          && apres.meilleureSerie == (serie > avant.meilleureSerie ? serie : avant.meilleureSerie)
+          && existsAfter(/databases/$(database)/documents/validations/$(string(jour) + '_' + uid));
+      }
+    }
+
+    match /validations/{id} {
+      allow read: if connecte();
+
+      // Une par joueur et par jour : l'identifiant l'impose.
+      allow create: if connecte()
+        && id == string(request.resource.data.jour) + '_' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'pseudo', 'jour', 'lieu', 'distance', 'gain', 'serie', 'photo', 'moment'])
+        && request.resource.data.uid == request.auth.uid
+        && jourValide(request.resource.data.jour)
+        && request.resource.data.lieu is string
+        && request.resource.data.distance is number
+        && request.resource.data.distance >= 0
+        && request.resource.data.distance <= 100
+        && request.resource.data.photo == 'photos/' + string(request.resource.data.jour) + '/' + request.auth.uid + '.jpg'
+        && request.resource.data.moment == request.time
+        // Pseudo, série et gain doivent correspondre au joueur tel qu'il sera
+        // après l'écriture.
+        && getAfter(/databases/$(database)/documents/joueurs/$(request.auth.uid)).data.dernierJour == request.resource.data.jour
+        && request.resource.data.pseudo == getAfter(/databases/$(database)/documents/joueurs/$(request.auth.uid)).data.pseudo
+        && request.resource.data.serie == getAfter(/databases/$(database)/documents/joueurs/$(request.auth.uid)).data.serie
+        && request.resource.data.gain == gainPour(request.resource.data.serie);
+
+      allow update: if false;
+      // Pour la suppression du compte.
+      allow delete: if connecte() && resource.data.uid == request.auth.uid;
+    }
+  }
+}

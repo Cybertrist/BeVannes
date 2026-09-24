@@ -1,0 +1,156 @@
+{
+  "lieux": [
+    {
+      "id": "cathedrale",
+      "nom": "Cathédrale Saint-Pierre",
+      "quartier": "Intra-muros",
+      "latitude": 47.657778,
+      "longitude": -2.756944,
+      "note": "Six siècles de chantier, du XIIIe au XIXe : le gothique de la nef côtoie une chapelle ronde de la Renaissance. Saint Vincent Ferrier, mort à Vannes en 1419, y est inhumé."
+    },
+    {
+      "id": "porte-saint-vincent",
+      "nom": "Porte Saint-Vincent",
+      "quartier": "Le port",
+      "latitude": 47.6545,
+      "longitude": -2.75804,
+      "note": "L'entrée de la ville close côté port. Rebâtie au début du XVIIIe siècle, elle porte dans sa niche la statue de saint Vincent Ferrier, patron de Vannes."
+    },
+    {
+      "id": "chateau-hermine",
+      "nom": "Château de l'Hermine",
+      "quartier": "Les remparts",
+      "latitude": 47.655166,
+      "longitude": -2.7567205,
+      "note": "Le duc Jean IV fit bâtir ici son château au XIVe siècle. L'hôtel particulier qu'on voit aujourd'hui l'a remplacé à la fin du XVIIIe, au pied des remparts."
+    },
+    {
+      "id": "lavoirs-garenne",
+      "nom": "Lavoirs de la Garenne",
+      "quartier": "Les remparts",
+      "latitude": 47.6555828,
+      "longitude": -2.7554577,
+      "note": "Sous leurs toits d'ardoise, au bord de la Marle, les lavandières rinçaient le linge jusqu'au milieu du XXe siècle. C'est l'une des vues les plus photographiées de la ville."
+    },
+    {
+      "id": "porte-poterne",
+      "nom": "Porte Poterne",
+      "quartier": "Les remparts",
+      "latitude": 47.6555385,
+      "longitude": -2.7561132,
+      "note": "Une poterne est une porte secondaire, discrète, percée dans une enceinte. Celle-ci ouvre les remparts sur la Marle et les lavoirs."
+    },
+    {
+      "id": "jardin-remparts",
+      "nom": "Jardin des remparts",
+      "quartier": "Les remparts",
+      "latitude": 47.6569114,
+      "longitude": -2.755709,
+      "note": "Des broderies de buis à la française au pied de l'une des enceintes les mieux conservées de Bretagne. La tour du Connétable veille sur le jardin."
+    },
+    {
+      "id": "place-henri-iv",
+      "nom": "Place Henri-IV",
+      "quartier": "Intra-muros",
+      "latitude": 47.657783,
+      "longitude": -2.7577926,
+      "note": "Le cœur de la vieille ville : des maisons à pans de bois des XVe et XVIe siècles, aux étages en encorbellement qui avancent au-dessus de la rue."
+    },
+    {
+      "id": "la-cohue",
+      "nom": "La Cohue",
+      "quartier": "Intra-muros",
+      "latitude": 47.6576028,
+      "longitude": -2.7575045,
+      "note": "Halle marchande dès le XIIIe siècle, elle accueillit le parlement de Bretagne exilé à Vannes de 1675 à 1689. Elle abrite aujourd'hui le musée des Beaux-Arts."
+    },
+    {
+      "id": "vannes-et-sa-femme",
+      "nom": "Vannes et sa femme",
+      "quartier": "Intra-muros",
+      "latitude": 47.6567125,
+      "longitude": -2.757612,
+      "note": "Levez les yeux : un couple sculpté dans le granit sourit aux passants depuis l'angle d'une maison du XVIe siècle. Enseigne ou clin d'œil, personne ne sait vraiment."
+    },
+    {
+      "id": "place-des-lices",
+      "nom": "Place des Lices",
+      "quartier": "Intra-muros",
+      "latitude": 47.6558985,
+      "longitude": -2.7571222,
+      "note": "Les lices sont l'espace clos des tournois : on s'y affrontait au Moyen Âge. Aujourd'hui, c'est le marché du mercredi et du samedi qui s'y dispute la place."
+    },
+    {
+      "id": "porte-prison",
+      "nom": "Porte Prison",
+      "quartier": "Saint-Patern",
+      "latitude": 47.6584465,
+      "longitude": -2.7553958,
+      "note": "L'une des plus anciennes portes de l'enceinte, vers le faubourg Saint-Patern. Sa tour a longtemps servi de geôle, d'où son nom."
+    },
+    {
+      "id": "saint-patern",
+      "nom": "Église Saint-Patern",
+      "quartier": "Saint-Patern",
+      "latitude": 47.659444,
+      "longitude": -2.754028,
+      "note": "Dédiée à saint Patern, premier évêque de Vannes selon la tradition. Le quartier qui l'entoure est l'un des plus anciens de la ville, hors les murs."
+    },
+    {
+      "id": "hotel-de-ville",
+      "nom": "Hôtel de ville",
+      "quartier": "Centre",
+      "latitude": 47.6583333,
+      "longitude": -2.7608333,
+      "note": "Façade néo-Renaissance de la fin du XIXe siècle. Sur la place, la statue équestre d'Arthur de Richemont, connétable de France et duc de Bretagne."
+    },
+    {
+      "id": "hotel-de-limur",
+      "nom": "Hôtel de Limur",
+      "quartier": "Centre",
+      "latitude": 47.6571655,
+      "longitude": -2.7603295,
+      "note": "Un hôtel particulier de la fin du XVIIe siècle, avec son grand escalier de pierre et, derrière, un jardin ouvert au public."
+    },
+    {
+      "id": "place-gambetta",
+      "nom": "Place Gambetta",
+      "quartier": "Le port",
+      "latitude": 47.6537536,
+      "longitude": -2.7589964,
+      "note": "Un arc de façades du XIXe siècle tourné vers les bateaux. C'est ici que la ville close rencontre le port, et que les terrasses se remplissent au premier soleil."
+    },
+    {
+      "id": "port",
+      "nom": "Le port",
+      "quartier": "Le port",
+      "latitude": 47.651667,
+      "longitude": -2.758333,
+      "note": "Le port de plaisance s'enfonce jusqu'au pied de la vieille ville. Un chenal le relie au golfe du Morbihan, à quelques kilomètres au sud."
+    },
+    {
+      "id": "prefecture",
+      "nom": "Préfecture du Morbihan",
+      "quartier": "Centre",
+      "latitude": 47.6581,
+      "longitude": -2.75347,
+      "note": "Vannes est le chef-lieu du Morbihan depuis la création des départements en 1790. L'hôtel de préfecture et son parc datent du XIXe siècle."
+    },
+    {
+      "id": "conleau",
+      "nom": "Pointe de Conleau",
+      "quartier": "Conleau",
+      "latitude": 47.6333839,
+      "longitude": -2.7728134,
+      "note": "Au bout de la promenade de la Rabine, une presqu'île de pins face au golfe, avec son bassin d'eau de mer où l'on se baigne à marée haute comme à marée basse."
+    },
+    {
+      "id": "parc-du-golfe",
+      "nom": "Parc du Golfe",
+      "quartier": "Conleau",
+      "latitude": 47.6349885,
+      "longitude": -2.7646702,
+      "note": "Le point de départ des bateaux pour les îles du golfe, l'île aux Moines et l'île d'Arz en tête. Le golfe compterait autant d'îles que l'année compte de jours."
+    }
+  ]
+}

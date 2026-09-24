@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Silhouette du V de BeVannes, pour la barre d'état (Android la veut
+     blanche sur transparent). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M3,6.2C3.9,5.4 5.3,5.5 6,6.5L11.6,15.2L16.4,7.6C15.6,7.2 15.2,6.4 15.4,5.6C16.6,5.2 18.8,5 21,5.4C19.4,5.8 18.2,6.4 17.9,7.4C17.7,8.2 18.3,8.9 18.6,9.7L13.3,18.6C12.6,19.7 11,19.7 10.3,18.6Z" />
+</vector>

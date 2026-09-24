@@ -1,33 +1,43 @@
-# Configuration Firebase — propre à chaque projet
+# Configuration Firebase : propre à chaque projet, jamais dans git
+firebase.env.json
 android/app/google-services.json
-ios/Runner/GoogleService-Info.plist
-lib/firebase_options.dart
+.firebaserc
 
-# Flutter / Dart
-.dart_tool/
-.packages
-.pub-cache/
-.pub/
-build/
-
-# Android
-android/.gradle/
-android/local.properties
+# Signature de publication
 android/key.properties
 *.jks
 *.keystore
+*.p12
 
-# iOS
-ios/Pods/
-ios/.symlinks/
-ios/Flutter/Flutter.framework
-ios/Flutter/Flutter.podspec
+# Flutter / Dart
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+app.*.symbols
+app.*.map.json
 
-# IDE
+# Android
+android/.gradle/
+android/.kotlin/
+android/local.properties
+android/app/debug
+android/app/profile
+android/app/release
+android/captures/
+android/gradlew
+android/gradlew.bat
+android/gradle/wrapper/gradle-wrapper.jar
+**/GeneratedPluginRegistrant.java
+
+# Captures de vérification
+tool/captures/
+
+# IDE et système
 .idea/
 *.iml
 .vscode/
-
-# OS
 .DS_Store
 Thumbs.db

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- L'icône des rappels n'est citée que depuis Dart : sans cette ligne, la
+     réduction des ressources de la version publiée la supprime. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_notification" />
