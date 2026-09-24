@@ -501,15 +501,15 @@ function mur() {
   // La légende qui suit l'histoire.
   b += pendant(D, 0.02, 0.3, text(x0, 398, t('Quatre joueurs sont passés : leurs photos restent verrouillées.', 'Four players have been: their photos stay locked.'), { size: 14, color: C.faint }), 0.02);
   b += pendant(D, 0.3, 0.52, text(x0, 398, t('Tu publies la tienne, prise sur place…', 'You post yours, taken on site…'), { size: 14, color: C.text }), 0.02);
-  b += pendant(D, 0.52, 0.93, text(x0, 398, t('…et le mur se dévoile. Storage le vérifie lui-même, pas l’application.', '…and the wall opens up. Storage checks it itself, not the app.'), { size: 14, color: C.title }), 0.02);
+  b += pendant(D, 0.52, 0.93, text(x0, 398, t('…et le mur se dévoile. Firestore le vérifie lui-même, pas l’application.', '…and the wall opens up. Firestore checks it itself, not the app.'), { size: 14, color: C.title }), 0.02);
 
   return svg(
     W,
     H,
     b,
     t(
-      "Animation : quatre photos du jour, de Maëlle, Yann, Erwan et Klervi, sont verrouillées. Une cinquième photo, la tienne, arrive dans la dernière case. Les verrous sautent alors l'un après l'autre et les quatre photos se dévoilent. C'est Storage qui vérifie, pas l'application.",
-      "Animation: four photos of the day, from Maëlle, Yann, Erwan and Klervi, are locked. A fifth photo, yours, drops into the last slot. The locks then come off one after another and the four photos are revealed. Storage does the checking, not the app.",
+      "Animation : quatre photos du jour, de Maëlle, Yann, Erwan et Klervi, sont verrouillées. Une cinquième photo, la tienne, arrive dans la dernière case. Les verrous sautent alors l'un après l'autre et les quatre photos se dévoilent. C'est Firestore qui vérifie, pas l'application.",
+      "Animation: four photos of the day, from Maëlle, Yann, Erwan and Klervi, are locked. A fifth photo, yours, drops into the last slot. The locks then come off one after another and the four photos are revealed. Firestore does the checking, not the app.",
     ),
   );
 }
@@ -850,7 +850,7 @@ function parcours() {
 
   const postes = [
     [t('Téléphone', 'Phone'), [t('photo en 3:4', '3:4 photo'), t('à 20 m du lieu', '20 m from the spot')]],
-    ['Storage', ['photos/20720/', 'toi.jpg']],
+    [t('Photo', 'Photo'), [t('3:4, 180 Ko', '3:4, 180 KB'), 'photos/20720_toi']],
     ['Firestore', [t('validation écrite', 'validation written'), t('joueur à jour', 'player updated')]],
     [t('Règles', 'Rules'), [t('série 3 → 4', 'streak 3 → 4'), '10 + 2 × 3 = 16 ✓']],
     [t('Classement', 'Leaderboard'), [t('+16 points', '+16 points'), t('4e sur 12', '4th of 12')]],
@@ -892,8 +892,8 @@ function parcours() {
     H,
     b,
     t(
-      "Animation : une validation traverse cinq postes. Le téléphone envoie une photo 3:4 prise à 20 mètres du lieu ; Storage la range dans photos/20720/toi.jpg ; Firestore écrit la validation et met à jour le joueur ; les règles recalculent la série, de 3 à 4, et le gain, 10 + 2 × 3 = 16 ; le classement affiche +16 points et la 4e place. Tout passe, ou rien.",
-      'Animation: a validation passes through five stations. The phone sends a 3:4 photo taken 20 metres from the spot; Storage files it under photos/20720/toi.jpg; Firestore writes the validation and updates the player; the rules recompute the streak, from 3 to 4, and the gain, 10 + 2 × 3 = 16; the leaderboard shows +16 points and 4th place. All or nothing.',
+      "Animation : une validation traverse cinq postes. Le téléphone envoie une photo 3:4 prise à 20 mètres du lieu ; la photo part dans photos/20720_toi ; Firestore écrit la validation et met à jour le joueur ; les règles recalculent la série, de 3 à 4, et le gain, 10 + 2 × 3 = 16 ; le classement affiche +16 points et la 4e place. Tout passe, ou rien.",
+      'Animation: a validation passes through five stations. The phone sends a 3:4 photo taken 20 metres from the spot; the photo goes to photos/20720_toi; Firestore writes the validation and updates the player; the rules recompute the streak, from 3 to 4, and the gain, 10 + 2 × 3 = 16; the leaderboard shows +16 points and 4th place. All or nothing.',
     ),
   );
 }

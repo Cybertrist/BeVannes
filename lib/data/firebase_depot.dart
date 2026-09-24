@@ -2,29 +2,32 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_storage/firebase_storage.dart';
 
 import '../domain/lieu.dart';
 import '../domain/modeles.dart';
 import '../domain/score.dart';
 import 'depot.dart';
 
-/// Le stockage en ligne : Firebase Authentication, Firestore et Storage.
+/// Le stockage en ligne : Firebase Authentication et Firestore.
 ///
 /// Collections :
 ///   joueurs/{uid}             pseudo, points, série, validations, dernier jour
 ///   validations/{jour}_{uid}  une par joueur et par jour, id imposé par les règles
-/// Photos : photos/{jour}/{uid}.jpg, lisibles seulement par ceux qui ont
-/// eux-mêmes validé ce jour-là (storage.rules).
+///   photos/{jour}_{uid}       le JPEG de la validation, lisible seulement par
+///                             ceux qui ont eux-mêmes validé ce jour-là
+///
+/// Les photos vivent dans Firestore et non dans Cloud Storage : Storage
+/// n'est plus offert sur le forfait gratuit de Firebase, et une photo 3:4
+/// de 900 × 1200 tient largement sous la limite de 1 Mo d'un document.
 class FirebaseDepot implements Depot {
   FirebaseDepot();
 
   final _auth = FirebaseAuth.instance;
   final _db = FirebaseFirestore.instance;
-  final _storage = FirebaseStorage.instance;
 
   CollectionReference<Map<String, dynamic>> get _joueurs => _db.collection('joueurs');
   CollectionReference<Map<String, dynamic>> get _validations => _db.collection('validations');
+  CollectionReference<Map<String, dynamic>> get _photos => _db.collection('photos');
 
   @override
   Stream<String?> get session => _auth.authStateChanges().map((u) => u?.uid);
@@ -61,14 +64,7 @@ class FirebaseDepot implements Depot {
     await user.reauthenticateWithCredential(EmailAuthProvider.credential(email: user.email!, password: motDePasse));
     final mes = await _validations.where('uid', isEqualTo: user.uid).get();
     for (final v in mes.docs) {
-      final chemin = v.data()['photo'] as String?;
-      if (chemin != null) {
-        try {
-          await _storage.ref(chemin).delete();
-        } on FirebaseException catch (_) {
-          // Déjà partie : rien à faire.
-        }
-      }
+      await _photos.doc(v.id).delete();
       await v.reference.delete();
     }
     await _joueurs.doc(user.uid).delete();
@@ -113,15 +109,15 @@ class FirebaseDepot implements Depot {
     required double distance,
     required String cheminPhoto,
   }) => _traduire(() async {
-    // 1. La photo d'abord : les règles de Storage autorisent à la remplacer
-    // tant que la validation n'existe pas, un nouvel essai reste possible.
-    final chemin = 'photos/$jour/$uid.jpg';
-    await _storage.ref(chemin).putFile(File(cheminPhoto), SettableMetadata(contentType: 'image/jpeg'));
-
-    // 2. La validation et les points, dans une même transaction : les
-    // règles vérifient l'une par l'autre (getAfter / existsAfter).
+    // La photo, la validation et les points partent dans une même
+    // transaction : les règles vérifient chacun par les autres (getAfter,
+    // existsAfter), et rien n'est écrit si l'un d'eux est refusé.
+    final octets = await File(cheminPhoto).readAsBytes();
+    final id = '${jour}_$uid';
+    final chemin = 'photos/$id';
     final refJoueur = _joueurs.doc(uid);
-    final refValidation = _validations.doc('${jour}_$uid');
+    final refValidation = _validations.doc(id);
+    final refPhoto = _photos.doc(id);
     return _db.runTransaction((tx) async {
       final deja = await tx.get(refValidation);
       if (deja.exists) throw const ErreurDepot('Le lieu du jour est déjà validé.');
@@ -142,6 +138,7 @@ class FirebaseDepot implements Depot {
         'photo': chemin,
         'moment': FieldValue.serverTimestamp(),
       });
+      tx.set(refPhoto, {'uid': uid, 'jour': jour, 'jpeg': Blob(octets)});
       tx.update(refJoueur, {
         'points': j.points + gain,
         'serie': serie,
@@ -166,8 +163,10 @@ class FirebaseDepot implements Depot {
   @override
   Future<List<int>?> photo(String chemin) async {
     try {
-      return await _storage.ref(chemin).getData(8 * 1024 * 1024);
+      final doc = await _db.doc(chemin).get();
+      return (doc.data()?['jpeg'] as Blob?)?.bytes;
     } on FirebaseException {
+      // Refusée tant qu'on n'a pas validé soi-même ce jour-là.
       return null;
     }
   }

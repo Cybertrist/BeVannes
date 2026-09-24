@@ -16,7 +16,10 @@ Chaque jour, l'application désigne un lieu de Vannes, le même pour tout le mon
 
 L'idée de départ : on passe devant les mêmes rues tous les jours sans jamais s'arrêter. Une contrainte ludique suffit parfois à changer ça.
 
-<p align="center"><a href="https://github.com/Cybertrist/BeVannes/releases/latest/download/BeVannes.apk"><img src="docs/telecharger.png" alt="Télécharger BeVannes, application Android, dernière version, mode démo" width="440"></a></p>
+<p align="center">
+  <a href="https://github.com/Cybertrist/BeVannes/releases/latest/download/BeVannes.apk"><img src="docs/telecharger.png" alt="Télécharger BeVannes, la version complète, application Android" width="400"></a>
+  <a href="https://github.com/Cybertrist/BeVannes/releases/latest/download/BeVannes-demo.apk"><img src="docs/telecharger-demo.png" alt="Essayer la démo de BeVannes, sans compte, application Android" width="400"></a>
+</p>
 
 <img src="docs/schemas/vitrine.svg" alt="Animation : un téléphone fait défiler six vrais écrans de BeVannes : la connexion, le lieu du jour avec sa carte, l’arrivée sur place avec la jauge pleine, la validation avec sa coche et ses confettis, le classement avec son podium, et le profil." width="100%">
 
@@ -34,7 +37,7 @@ Une partie tient en quatre temps.
 
 **Le mur du jour.** Les photos des autres restent verrouillées tant qu'on n'a pas publié la sienne.
 
-<img src="docs/schemas/mur.svg" alt="Animation : quatre photos du jour, de Maëlle, Yann, Erwan et Klervi, sont verrouillées. Une cinquième photo, la tienne, arrive dans la dernière case. Les verrous sautent alors l'un après l'autre et les quatre photos se dévoilent. C'est Storage qui vérifie, pas l'application." width="100%">
+<img src="docs/schemas/mur.svg" alt="Animation : quatre photos du jour, de Maëlle, Yann, Erwan et Klervi, sont verrouillées. Une cinquième photo, la tienne, arrive dans la dernière case. Les verrous sautent alors l'un après l'autre et les quatre photos se dévoilent. C'est Firestore qui vérifie, pas l'application." width="100%">
 
 **Le rappel.** Une notification par jour, à une heure qui change tous les jours mais tombe au même moment pour tout le monde.
 
@@ -43,7 +46,7 @@ Une partie tient en quatre temps.
 
 <img src="docs/sections/s02.png" alt="02 Sous le capot" width="100%">
 
-Une application Flutter pour Android, avec Firebase derrière : Authentication pour les comptes, Firestore pour les joueurs et les validations, Storage pour les photos. La carte vient d'OpenStreetMap, sans clé d'API.
+Une application Flutter pour Android, avec Firebase derrière : Authentication pour les comptes, Firestore pour les joueurs, les validations et les photos. Les photos y tiennent sans peine, en 3:4 de 900 × 1200 pixels, et Cloud Storage n'est plus offert sur le forfait gratuit de Firebase : tout le jeu tourne sans rien payer. La carte vient d'OpenStreetMap, sans clé d'API.
 
 Trois pièces tiennent le jeu.
 
@@ -51,7 +54,7 @@ Trois pièces tiennent le jeu.
 
 Une validation traverse cinq étapes, et tout passe d'un bloc ou rien ne passe.
 
-<img src="docs/schemas/parcours.svg" alt="Animation : une validation traverse cinq postes. Le téléphone envoie une photo 3:4 prise à 20 mètres du lieu ; Storage la range dans photos/20720/toi.jpg ; Firestore écrit la validation et met à jour le joueur ; les règles recalculent la série, de 3 à 4, et le gain, 10 + 2 × 3 = 16 ; le classement affiche +16 points et la 4e place. Tout passe, ou rien." width="100%">
+<img src="docs/schemas/parcours.svg" alt="Animation : une validation traverse cinq postes. Le téléphone envoie une photo 3:4 prise à 20 mètres du lieu ; la photo part dans photos/20720_toi ; Firestore écrit la validation et met à jour le joueur ; les règles recalculent la série, de 3 à 4, et le gain, 10 + 2 × 3 = 16 ; le classement affiche +16 points et la 4e place. Tout passe, ou rien." width="100%">
 
 Le téléphone ne fait que proposer ses points : Firestore refait le calcul et refuse ce qui ne tombe pas juste.
 
@@ -71,9 +74,25 @@ Côté interface, chaque animation a un rôle : un radar marque le lieu sur la c
 
 <img src="docs/sections/s03.png" alt="03 Installation" width="100%">
 
-**Pour essayer**, le bouton en haut de page installe la version de démonstration : une petite communauté fictive, tout reste sur le téléphone, et un interrupteur place le joueur sur le lieu du jour pour tester la validation sans traverser la ville.
+Deux applications, qui s'installent côte à côte sans se gêner.
 
-**Pour construire**, il faut Flutter.
+- **BeVannes**, la version complète : le vrai jeu, relié au serveur. Un compte, le classement, les photos et les séries partagés avec les autres joueurs.
+- **BeVannes démo** : une petite communauté fictive, tout reste sur le téléphone, et un interrupteur « Me téléporter sur le lieu » pour essayer la validation sans traverser Vannes.
+
+Les deux sont signées par la même clé ; une mise à jour s'installe par-dessus la précédente sans rien perdre.
+
+```
+# SHA-256 de BeVannes.apk, version 2.1.0
+8d25d9ecd2d6d0e5175adf36d63d6e58815335ea5c04ffd7bf8e58b6c87ead7e
+
+# SHA-256 de BeVannes-demo.apk, version 2.1.0
+92d5c9d0592950c7ae3c6936ab28e98d11f1b93cf3128b468b4e34d2bfa81eaf
+
+# SHA-256 du certificat de signature, CN=BeVannes, O=Cybertrist
+9a8c67645db4e34f4585d84e1db2addf9cbbabc01539bfb4ff57277c0f00feeb
+```
+
+**Pour construire**, il faut Flutter. La démo se construit avec `--dart-define=DEMO=true`, qui lui donne aussi son propre identifiant, `fr.bevannes.bevannes.demo`.
 
 ```bash
 git clone https://github.com/Cybertrist/BeVannes.git
@@ -84,7 +103,7 @@ flutter run --dart-define=DEMO=true
 
 **Pour jouer pour de vrai**, il faut un projet Firebase.
 
-1. Sur la [console Firebase](https://console.firebase.google.com/), activer **Authentication** (e-mail et mot de passe), **Firestore** et **Storage**, et déclarer une application Android `fr.bevannes.bevannes`.
+1. Sur la [console Firebase](https://console.firebase.google.com/), activer **Authentication** (e-mail et mot de passe) et **Firestore**, et déclarer une application Android `fr.bevannes.bevannes`.
 2. Télécharger son `google-services.json`, puis écrire la configuration de compilation, ignorée par git :
 
 ```bash
@@ -94,7 +113,7 @@ bash tool/firebase_env.sh chemin/vers/google-services.json
 3. Déployer les règles et les index du dépôt :
 
 ```bash
-firebase deploy --only firestore,storage
+firebase deploy --only firestore
 ```
 
 4. Construire :
@@ -103,7 +122,7 @@ firebase deploy --only firestore,storage
 flutter build apk --release --dart-define-from-file=firebase.env.json
 ```
 
-> Les clés d'API Firebase côté client ne sont pas des secrets, elles se lisent dans tout APK. Ce qui protège les données, ce sont les **règles** de `firestore.rules` et `storage.rules` : un joueur n'écrit que ses propres points, recalculés par le serveur, et ne voit les photos d'un jour qu'après avoir validé ce jour-là.
+> Les clés d'API Firebase côté client ne sont pas des secrets, elles se lisent dans tout APK. Ce qui protège les données, ce sont les **règles** de `firestore.rules` : un joueur n'écrit que ses propres points, recalculés par le serveur, et ne voit les photos d'un jour qu'après avoir validé ce jour-là.
 
 <img src="docs/sections/s04.png" alt="04 Ajouter des lieux" width="100%">
 

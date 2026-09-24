@@ -89,7 +89,8 @@ service cloud.firestore {
         && request.resource.data.distance is number
         && request.resource.data.distance >= 0
         && request.resource.data.distance <= 100
-        && request.resource.data.photo == 'photos/' + string(request.resource.data.jour) + '/' + request.auth.uid + '.jpg'
+        && request.resource.data.photo == 'photos/' + id
+        && existsAfter(/databases/$(database)/documents/photos/$(id))
         && request.resource.data.moment == request.time
         // Pseudo, série et gain doivent correspondre au joueur tel qu'il sera
         // après l'écriture.
@@ -100,6 +101,27 @@ service cloud.firestore {
 
       allow update: if false;
       // Pour la suppression du compte.
+      allow delete: if connecte() && resource.data.uid == request.auth.uid;
+    }
+
+    // Les photos, une par validation, sous le même identifiant.
+    match /photos/{id} {
+      // Comme dans BeReal : on ne voit les photos d'un jour qu'après avoir
+      // soi-même validé ce jour-là. La sienne se voit toujours.
+      allow read: if connecte()
+        && (resource.data.uid == request.auth.uid
+          || exists(/databases/$(database)/documents/validations/$(string(resource.data.jour) + '_' + request.auth.uid)));
+
+      // Écrite dans la même transaction que sa validation, jamais seule.
+      allow create: if connecte()
+        && id == string(request.resource.data.jour) + '_' + request.auth.uid
+        && request.resource.data.keys().hasOnly(['uid', 'jour', 'jpeg'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.jpeg is bytes
+        && request.resource.data.jpeg.size() < 900 * 1024
+        && existsAfter(/databases/$(database)/documents/validations/$(id));
+
+      allow update: if false;
       allow delete: if connecte() && resource.data.uid == request.auth.uid;
     }
   }

@@ -16,7 +16,10 @@ Every day, the app picks a place in Vannes, the same one for everyone. To score,
 
 The starting idea: we walk past the same streets every day without ever stopping. A playful constraint is sometimes enough to change that.
 
-<p align="center"><a href="https://github.com/Cybertrist/BeVannes/releases/latest/download/BeVannes.apk"><img src="docs/en/telecharger.png" alt="Download BeVannes, Android app, latest version, demo mode" width="440"></a></p>
+<p align="center">
+  <a href="https://github.com/Cybertrist/BeVannes/releases/latest/download/BeVannes.apk"><img src="docs/en/telecharger.png" alt="Download BeVannes, the full version, Android app" width="400"></a>
+  <a href="https://github.com/Cybertrist/BeVannes/releases/latest/download/BeVannes-demo.apk"><img src="docs/en/telecharger-demo.png" alt="Try the BeVannes demo, no account, Android app" width="400"></a>
+</p>
 
 <img src="docs/en/schemas/vitrine.svg" alt="Animation: a phone scrolls through six real BeVannes screens: sign in, the spot of the day with its map, arriving on site with the gauge full, the validation with its tick and confetti, the leaderboard with its podium, and the profile." width="100%">
 
@@ -34,7 +37,7 @@ A game plays out in four beats.
 
 **Today's wall.** Other players' photos stay locked until you have posted yours.
 
-<img src="docs/en/schemas/mur.svg" alt="Animation: four photos of the day, from Maëlle, Yann, Erwan and Klervi, are locked. A fifth photo, yours, drops into the last slot. The locks then come off one after another and the four photos are revealed. Storage does the checking, not the app." width="100%">
+<img src="docs/en/schemas/mur.svg" alt="Animation: four photos of the day, from Maëlle, Yann, Erwan and Klervi, are locked. A fifth photo, yours, drops into the last slot. The locks then come off one after another and the four photos are revealed. Firestore does the checking, not the app." width="100%">
 
 **The reminder.** One notification a day, at a time that changes every day but lands at the same moment for everyone.
 
@@ -44,7 +47,7 @@ A game plays out in four beats.
 
 <img src="docs/en/sections/s02.png" alt="02 Under the hood" width="100%">
 
-A Flutter app for Android, with Firebase behind it: Authentication for accounts, Firestore for players and validations, Storage for photos. The map comes from OpenStreetMap, no API key needed.
+A Flutter app for Android, with Firebase behind it: Authentication for accounts, Firestore for players, validations and photos. The photos fit easily, as 3:4 at 900 × 1200 pixels, and Cloud Storage is no longer offered on Firebase's free plan: the whole game runs without paying anything. The map comes from OpenStreetMap, no API key needed.
 
 Three pieces hold the game together.
 
@@ -52,7 +55,7 @@ Three pieces hold the game together.
 
 A validation goes through five steps, and it all goes through in one block or not at all.
 
-<img src="docs/en/schemas/parcours.svg" alt="Animation: a validation passes through five stations. The phone sends a 3:4 photo taken 20 metres from the spot; Storage files it under photos/20720/toi.jpg; Firestore writes the validation and updates the player; the rules recompute the streak, from 3 to 4, and the gain, 10 + 2 × 3 = 16; the leaderboard shows +16 points and 4th place. All or nothing." width="100%">
+<img src="docs/en/schemas/parcours.svg" alt="Animation: a validation passes through five stations. The phone sends a 3:4 photo taken 20 metres from the spot; the photo goes to photos/20720_toi; Firestore writes the validation and updates the player; the rules recompute the streak, from 3 to 4, and the gain, 10 + 2 × 3 = 16; the leaderboard shows +16 points and 4th place. All or nothing." width="100%">
 
 The phone only proposes its points: Firestore redoes the maths and refuses anything that does not add up.
 
@@ -72,9 +75,25 @@ On the interface side, every animation has a job: a radar marks the spot on the 
 
 <img src="docs/en/sections/s03.png" alt="03 Installation" width="100%">
 
-**To try it**, the button at the top installs the demo build: a small made-up community, everything stays on the phone, and a switch puts the player on today's spot to test validation without crossing town.
+Two apps, which install side by side without getting in each other's way.
 
-**To build it**, you need Flutter.
+- **BeVannes**, the full version: the real game, connected to the server. One account, with the leaderboard, photos and streaks shared with the other players.
+- **BeVannes démo**: a small made-up community, everything stays on the phone, and a "Me téléporter sur le lieu" switch to try validation without crossing Vannes.
+
+Both are signed with the same key; an update installs over the previous one without losing anything.
+
+```
+# SHA-256 of BeVannes.apk, version 2.1.0
+8d25d9ecd2d6d0e5175adf36d63d6e58815335ea5c04ffd7bf8e58b6c87ead7e
+
+# SHA-256 of BeVannes-demo.apk, version 2.1.0
+92d5c9d0592950c7ae3c6936ab28e98d11f1b93cf3128b468b4e34d2bfa81eaf
+
+# SHA-256 of the signing certificate, CN=BeVannes, O=Cybertrist
+9a8c67645db4e34f4585d84e1db2addf9cbbabc01539bfb4ff57277c0f00feeb
+```
+
+**To build it**, you need Flutter. The demo is built with `--dart-define=DEMO=true`, which also gives it its own identifier, `fr.bevannes.bevannes.demo`.
 
 ```bash
 git clone https://github.com/Cybertrist/BeVannes.git
@@ -85,7 +104,7 @@ flutter run --dart-define=DEMO=true
 
 **To play for real**, you need a Firebase project.
 
-1. On the [Firebase console](https://console.firebase.google.com/), enable **Authentication** (email and password), **Firestore** and **Storage**, and register an Android app `fr.bevannes.bevannes`.
+1. On the [Firebase console](https://console.firebase.google.com/), enable **Authentication** (email and password) and **Firestore**, and register an Android app `fr.bevannes.bevannes`.
 2. Download its `google-services.json`, then write the build configuration, which git ignores:
 
 ```bash
@@ -95,7 +114,7 @@ bash tool/firebase_env.sh path/to/google-services.json
 3. Deploy the rules and indexes from the repository:
 
 ```bash
-firebase deploy --only firestore,storage
+firebase deploy --only firestore
 ```
 
 4. Build:
@@ -104,7 +123,7 @@ firebase deploy --only firestore,storage
 flutter build apk --release --dart-define-from-file=firebase.env.json
 ```
 
-> Client-side Firebase API keys are not secrets, they can be read from any APK. What protects the data are the **rules** in `firestore.rules` and `storage.rules`: a player only writes their own points, recomputed by the server, and only sees a day's photos after validating that day themselves.
+> Client-side Firebase API keys are not secrets, they can be read from any APK. What protects the data are the **rules** in `firestore.rules`: a player only writes their own points, recomputed by the server, and only sees a day's photos after validating that day themselves.
 
 <img src="docs/en/sections/s04.png" alt="04 Adding places" width="100%">
 
