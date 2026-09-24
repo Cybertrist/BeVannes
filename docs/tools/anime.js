@@ -127,7 +127,7 @@ const LIEUX = [
 function tirage() {
   const D = 9;
   const W = 1280;
-  const H = 380;
+  const H = 430;
   let b = '';
 
   // La roulette : les noms défilent, ralentissent, et se posent.
@@ -155,7 +155,7 @@ function tirage() {
   // Le cadre qui désigne la ligne retenue.
   b += `<rect x="${rx + 10}" y="${ry + lh}" width="${rw - 20}" height="${lh}" rx="12" fill="none" stroke="${C.accent}" stroke-width="2">${anim(D, 'stroke-opacity', [[0, 0.35], [0.46, 0.35], [0.49, 1], [0.92, 1], [0.95, 0.35]])}</rect>`;
   b += `<rect x="${rx}" y="${ry}" width="${rw}" height="${lh}" fill="${C.bg}" opacity=".55"/><rect x="${rx}" y="${ry + 2 * lh}" width="${rw}" height="${lh}" fill="${C.bg}" opacity=".55"/>`;
-  b += text(rx, ry + lh * 3 + 42, t('Jeudi 24 septembre, jour 20 720', 'Thursday 24 September, day 20,720'), { size: 14, color: C.faint, font: MONO });
+  b += text(rx, ry + lh * 3 + 88, t('Jeudi 24 septembre, jour 20 720', 'Thursday 24 September, day 20,720'), { size: 14, color: C.faint, font: MONO });
 
   // Trois téléphones, trois joueurs : le même lieu s'allume partout.
   const px = 700;
@@ -180,7 +180,7 @@ function tirage() {
     D,
     0.56,
     0.93,
-    text(px, ry + lh * 3 + 42, t('Aucun serveur ne tire au sort : personne ne peut tricher sur le lieu.', 'No server draws anything: nobody can cheat on the spot.'), { size: 14, color: C.text }),
+    text(px, ry + lh * 3 + 88, t('Aucun serveur ne tire au sort : personne ne peut tricher sur le lieu.', 'No server draws anything: nobody can cheat on the spot.'), { size: 14, color: C.text }),
   );
 
   return svg(
@@ -453,7 +453,7 @@ function serie() {
 function mur() {
   const D = 9;
   const W = 1280;
-  const H = 400;
+  const H = 430;
   let b = '';
   b += etape(70, 60, t('LE MUR DU JOUR', "TODAY'S WALL"), t('Comme BeReal : poster la sienne pour voir celles des autres', 'Like BeReal: post yours to see everyone else’s'));
 
@@ -499,9 +499,9 @@ function mur() {
   b += pendant(D, 0.36, 0.93, text(mx, y + th + 26, t('Toi', 'You'), { size: 14, color: C.accent, weight: 700 }) + text(mx + tw, y + th + 26, '12:48', { size: 13, color: C.faint, anchor: 'end', font: MONO }));
 
   // La légende qui suit l'histoire.
-  b += pendant(D, 0.02, 0.3, text(x0, 372, t('Quatre joueurs sont passés : leurs photos restent verrouillées.', 'Four players have been: their photos stay locked.'), { size: 14, color: C.faint }), 0.02);
-  b += pendant(D, 0.3, 0.52, text(x0, 372, t('Tu publies la tienne, prise sur place…', 'You post yours, taken on site…'), { size: 14, color: C.text }), 0.02);
-  b += pendant(D, 0.52, 0.93, text(x0, 372, t('…et le mur se dévoile. Storage le vérifie lui-même, pas l’application.', '…and the wall opens up. Storage checks it itself, not the app.'), { size: 14, color: C.title }), 0.02);
+  b += pendant(D, 0.02, 0.3, text(x0, 398, t('Quatre joueurs sont passés : leurs photos restent verrouillées.', 'Four players have been: their photos stay locked.'), { size: 14, color: C.faint }), 0.02);
+  b += pendant(D, 0.3, 0.52, text(x0, 398, t('Tu publies la tienne, prise sur place…', 'You post yours, taken on site…'), { size: 14, color: C.text }), 0.02);
+  b += pendant(D, 0.52, 0.93, text(x0, 398, t('…et le mur se dévoile. Storage le vérifie lui-même, pas l’application.', '…and the wall opens up. Storage checks it itself, not the app.'), { size: 14, color: C.title }), 0.02);
 
   return svg(
     W,
@@ -519,7 +519,7 @@ function mur() {
 function rappel() {
   const D = 10;
   const W = 1280;
-  const H = 380;
+  const H = 420;
   let b = '';
   b += etape(70, 60, t('LE RAPPEL', 'THE REMINDER'), t('Une heure différente chaque jour, la même pour tout le monde', 'A different time every day, the same for everyone'));
 
@@ -554,7 +554,11 @@ function rappel() {
         while (a + cumul < prec) cumul += 360;
       }
       a += cumul;
-      vals.push([0.02 + i * pas, a], [0.02 + i * pas + 0.08, a]);
+      // Les aiguilles tiennent l'heure tant qu'elle est affichée, puis
+      // tournent vers la suivante dans les derniers instants.
+      const arrive = 0.02 + i * pas;
+      const repart = i < jours.length - 1 ? arrive + pas - 0.07 : 0.96;
+      vals.push([arrive, a], [repart, a]);
       prec = a;
     });
     return vals;
@@ -569,8 +573,8 @@ function rappel() {
 
   // Le jour et l'heure, à droite du cadran.
   jours.forEach(([nom, h, m], i) => {
-    const a = 0.02 + i * pas + 0.05;
-    const z = i < jours.length - 1 ? 0.02 + (i + 1) * pas + 0.05 : 0.96;
+    const a = 0.02 + i * pas;
+    const z = i < jours.length - 1 ? 0.02 + (i + 1) * pas : 0.96;
     b += pendant(D, a, z, text(360, 190, nom, { size: 16, color: C.faint }) + text(360, 240, `${h} h ${String(m).padStart(2, '0')}`, { size: 46, color: C.title, weight: 800 }), 0.015);
   });
 
@@ -601,7 +605,7 @@ function rappel() {
       .flat();
     b += `<g><g>${move(D, [[0, '0 0'], ...secousses])}${telephone(x, 110, 150, 216, text(75, 190, qui, { size: 13, color: C.faint, anchor: 'middle' }) + notif)}</g></g>`;
   });
-  b += text(px, 360, t('Calculée sur chaque téléphone : aucune notification ne passe par un serveur.', 'Worked out on each phone: no notification goes through a server.'), { size: 14, color: C.faint });
+  b += text(px, 380, t('Calculée sur chaque téléphone : aucune notification ne passe par un serveur.', 'Worked out on each phone: no notification goes through a server.'), { size: 14, color: C.faint });
 
   return svg(
     W,

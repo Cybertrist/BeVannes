@@ -6,6 +6,7 @@
 </p>
 
 <img src="docs/banniere.png" alt="BeVannes, BeReal rencontre GeoGuessr" width="100%">
+<br><br>
 
 </div>
 
