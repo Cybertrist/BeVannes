@@ -57,6 +57,8 @@ HTML
   --screenshot="$B/png$SUF/f-$1.png" --window-size=1280,320 "file:///$B/html$SUF/f-$1.html" >/dev/null 2>&1
 echo "  f-$1.png"
 }
+# C <cat> <cat>... : plusieurs vignettes de catégorie en haut à droite.
+C () { local s="$1"; shift; for x in "$@"; do s="$s</b><b>$x"; done; printf "%s" "$s"; }
 P () { for x in "$@"; do printf '<span>%s</span>' "$x"; done; }
 PRIV="<i>$(t 'PRIVÉ' 'PRIVATE')</i>"
 
