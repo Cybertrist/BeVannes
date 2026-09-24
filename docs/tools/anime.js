@@ -77,6 +77,9 @@ function appear(D, from, to = 0.96, fade = 0.025) {
   ]);
 }
 
+/** Visible de `from` à `to`, sans fondu : pour les chiffres qui se succèdent. */
+const net = (D, from, to, contenu) => `<g opacity="0">${anim(D, 'opacity', [[0, 0], [from, 1], [to, 0]], { discrete: true })}${contenu}</g>`;
+
 /** Un groupe invisible au départ, qui apparaît de `from` à `to`. */
 const pendant = (D, from, to, contenu, fade) => `<g opacity="0">${appear(D, from, to, fade)}${contenu}</g>`;
 
@@ -193,81 +196,134 @@ function tirage() {
 
 // --- 2. La validation sur place -------------------------------------------
 
+/** Longueur d'une polyligne, et le point à une fraction de sa longueur. */
+function longueur(pts) {
+  let l = 0;
+  for (let i = 1; i < pts.length; i++) l += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+  return l;
+}
+function pointA(pts, f) {
+  let reste = longueur(pts) * f;
+  for (let i = 1; i < pts.length; i++) {
+    const [ax, ay] = pts[i - 1];
+    const [bx, by] = pts[i];
+    const l = Math.hypot(bx - ax, by - ay);
+    if (reste <= l) return [ax + ((bx - ax) * reste) / l, ay + ((by - ay) * reste) / l];
+    reste -= l;
+  }
+  return pts.at(-1);
+}
+const polyligne = (pts) => 'M' + pts.map((p) => p.join(' ')).join(' L');
+
+/** Remplissage de la jauge, la même formule que JaugeApproche dans l'appli. */
+const remplissage = (m) => (m <= 100 ? 1 : Math.max(0.04, 1 - Math.log(m / 100) / Math.log(30)));
+
 function approche() {
-  const D = 10;
+  const D = 11;
   const W = 1280;
   const H = 420;
   let b = '';
 
-  // La carte : quelques rues, la zone de 100 m, le radar.
+  // La carte : des rues droites, comme un quartier vu d'en haut.
   const mx = 40;
   const my = 40;
   const mw = 760;
   const mh = 340;
   b += `<rect x="${mx}" y="${my}" width="${mw}" height="${mh}" rx="22" fill="#0A1614" stroke="${C.line}"/>`;
-  b += `<clipPath id="carte"><rect x="${mx}" y="${my}" width="${mw}" height="${mh}" rx="22"/></clipPath><g clip-path="url(#carte)" stroke="#16312C" fill="none" stroke-linecap="round">
-  <path d="M40 300 C 220 280, 300 200, 520 190 S 760 120, 820 90" stroke-width="16"/>
-  <path d="M160 40 L 240 380" stroke-width="10"/><path d="M420 40 C 440 160, 400 260, 470 380" stroke-width="12"/>
-  <path d="M600 40 L 640 380" stroke-width="8"/><path d="M40 150 L 820 230" stroke-width="7"/>
-  <path d="M700 60 L 800 300" stroke-width="6"/></g>`;
-  const cx = 610;
-  const cy = 180;
-  const zone = 78;
-  b += `<circle cx="${cx}" cy="${cy}" r="${zone}" fill="${C.accent}" stroke="${C.accent}" stroke-width="2">${anim(D, 'fill-opacity', [[0, 0.07], [0.62, 0.07], [0.66, 0.2], [0.94, 0.2], [0.97, 0.07]])}${anim(D, 'stroke-opacity', [[0, 0.45], [0.62, 0.45], [0.66, 1], [0.94, 1], [0.97, 0.45]])}</circle>`;
+  const rues = [
+    [[[40, 322], [300, 300], [820, 262]], 18],
+    [[[300, 40], [300, 380]], 12],
+    [[[40, 190], [300, 170], [560, 140], [820, 110]], 12],
+    [[[560, 40], [560, 380]], 11],
+    [[[430, 40], [440, 380]], 8],
+    [[[690, 40], [705, 380]], 8],
+    [[[150, 40], [165, 380]], 7],
+  ];
+  b += `<clipPath id="carte"><rect x="${mx}" y="${my}" width="${mw}" height="${mh}" rx="22"/></clipPath><g clip-path="url(#carte)" fill="none" stroke-linecap="round" stroke-linejoin="round">`;
+  for (const [pts, e] of rues) b += `<path d="${polyligne(pts)}" stroke="#17332E" stroke-width="${e}"/>`;
+  b += '</g>';
+
+  // Le lieu, sur la rue verticale, avec sa zone de 100 m et le radar.
+  const cx = 560;
+  const cy = 212;
+  const zone = 78; // 78 px pour 100 m
+  const metresParPx = 100 / zone;
+
+  // L'itinéraire : il suit les rues, virage après virage.
+  const route = [
+    [90, 318],
+    [300, 300],
+    [300, 170],
+    [560, 140],
+    [560, cy - 12],
+  ];
+  const depart = 0.05;
+  const arrivee = 0.6;
+  b += `<path d="${polyligne(route)}" fill="none" stroke="#5AA9FF" stroke-opacity=".28" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>`;
+  b += `<path d="${polyligne(route)}" fill="none" stroke="#5AA9FF" stroke-opacity=".8" stroke-width="2.5" stroke-dasharray="2 9" stroke-linecap="round" stroke-linejoin="round"/>`;
+
+  // Les instants clés, calculés sur la route elle-même.
+  const echantillons = Array.from({ length: 61 }, (_, i) => {
+    const f = i / 60;
+    const [x, y] = pointA(route, f);
+    return { t: depart + f * (arrivee - depart), m: Math.hypot(x - cx, y - cy) * metresParPx };
+  });
+  const entree = echantillons.find((e) => e.m <= 100).t;
+
+  b += `<circle cx="${cx}" cy="${cy}" r="${zone}" fill="${C.accent}" stroke="${C.accent}" stroke-width="2">${anim(D, 'fill-opacity', [[0, 0.07], [entree, 0.07], [entree + 0.03, 0.2], [0.94, 0.2], [0.97, 0.07]])}${anim(D, 'stroke-opacity', [[0, 0.45], [entree, 0.45], [entree + 0.03, 1], [0.94, 1], [0.97, 0.45]])}</circle>`;
   for (let i = 0; i < 3; i++) {
     b += `<circle cx="${cx}" cy="${cy}" fill="none" stroke="${C.accent}" stroke-width="2"><animate attributeName="r" dur="2.4s" begin="${-i * 0.8}s" repeatCount="indefinite" values="8;${zone}"/><animate attributeName="stroke-opacity" dur="2.4s" begin="${-i * 0.8}s" repeatCount="indefinite" values=".8;0"/></circle>`;
   }
   b += `<circle cx="${cx}" cy="${cy}" r="9" fill="url(#degrade)" stroke="${C.bg}" stroke-width="3"/>`;
-  b += text(cx, cy + zone + 24, '100 m', { size: 13, color: C.accent, anchor: 'middle', font: MONO, weight: 700 });
+  b += text(cx + zone + 10, cy + 5, '100 m', { size: 13, color: C.accent, font: MONO, weight: 700 });
 
-  // Le joueur qui marche vers le lieu.
-  const chemin = `M110 330 C 220 300, 300 250, 380 230 S 520 200, ${cx - 26} ${cy + 14}`;
-  b += `<path d="${chemin}" fill="none" stroke="#5AA9FF" stroke-opacity=".35" stroke-width="2.5" stroke-dasharray="4 8"/>`;
-  b += `<g><animateMotion dur="${D}s" repeatCount="indefinite" path="${chemin}" keyPoints="0;0;1;1;0" keyTimes="0;0.05;0.64;0.96;1" calcMode="linear"/>
+  // Le joueur, qui suit exactement l'itinéraire, puis s'efface.
+  b += `<g><animateMotion dur="${D}s" repeatCount="indefinite" path="${polyligne(route)}" keyPoints="0;0;1;1" keyTimes="0;${depart};${arrivee};1" calcMode="linear"/>
+  ${anim(D, 'opacity', [[0, 0], [0.02, 1], [0.93, 1], [0.97, 0]])}
   <circle r="16" fill="#5AA9FF" fill-opacity=".22"/><circle r="8" fill="#5AA9FF" stroke="#fff" stroke-width="3"/></g>`;
 
-  // À droite : la jauge, la distance, le bouton.
+  // À droite : la jauge et la distance, calculées à chaque pas.
   const gx = 960;
-  const gy = 150;
+  const gy = 170;
   const r = 62;
   const tour = 2 * Math.PI * r;
   b += etape(860, 68, t('LA JAUGE', 'THE GAUGE'), t("L'anneau se remplit en approchant", 'The ring fills as you get closer'));
-  b += `<circle cx="${gx}" cy="${gy + 20}" r="${r}" fill="none" stroke="${C.card2}" stroke-width="10"/>`;
-  b += `<circle cx="${gx}" cy="${gy + 20}" r="${r}" fill="none" stroke="url(#degrade)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${tour.toFixed(1)}" transform="rotate(-90 ${gx} ${gy + 20})">${anim(D, 'stroke-dashoffset', [[0, tour * 0.96], [0.05, tour * 0.96], [0.2, tour * 0.72], [0.36, tour * 0.52], [0.5, tour * 0.3], [0.64, 0], [0.96, 0], [0.99, tour * 0.96]].map(([a, v]) => [a, v.toFixed(1)]))}</circle>`;
-  const distances = [
-    [0.0, 0.2, '1,2', 'km'],
-    [0.2, 0.36, '640', t('mètres', 'metres')],
-    [0.36, 0.5, '310', t('mètres', 'metres')],
-    [0.5, 0.64, '150', t('mètres', 'metres')],
-  ];
-  distances.forEach(([a, z, v, u]) => {
-    b += pendant(D, a, z, text(gx, gy + 26, v, { size: 30, color: C.title, weight: 700, anchor: 'middle', font: MONO }) + text(gx, gy + 48, u, { size: 12, color: C.faint, anchor: 'middle' }), 0.012);
+  b += `<circle cx="${gx}" cy="${gy}" r="${r}" fill="none" stroke="${C.card2}" stroke-width="10"/>`;
+  const jauge = echantillons.filter((_, i) => i % 3 === 0).map((e) => [e.t, (tour * (1 - remplissage(e.m))).toFixed(1)]);
+  b += `<circle cx="${gx}" cy="${gy}" r="${r}" fill="none" stroke="url(#degrade)" stroke-width="10" stroke-linecap="round" stroke-dasharray="${tour.toFixed(1)}" transform="rotate(-90 ${gx} ${gy})">${anim(D, 'stroke-dashoffset', [[0, jauge[0][1]], ...jauge, [0.94, '0'], [0.98, jauge[0][1]]])}</circle>`;
+  // La distance : un chiffre par pas, arrondi comme dans l'appli.
+  const pas = echantillons.filter((e, i) => i % 4 === 0 && e.t < entree);
+  pas.forEach((e, i) => {
+    const fin = i < pas.length - 1 ? pas[i + 1].t : entree;
+    const v = `${Math.round(e.m / 10) * 10}`;
+    b += net(D, e.t, fin, text(gx, gy + 6, v, { size: 30, color: C.title, weight: 700, anchor: 'middle', font: MONO }) + text(gx, gy + 28, t('mètres', 'metres'), { size: 12, color: C.faint, anchor: 'middle' }));
   });
-  b += pendant(D, 0.64, 0.96, `<path d="M${gx - 18} ${gy + 20} l12 12 l24 -26" fill="none" stroke="${C.accent}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`, 0.02);
+  b += pendant(D, entree, 0.94, `<path d="M${gx - 18} ${gy} l12 12 l24 -26" fill="none" stroke="${C.accent}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`, 0.02);
 
   // Le bouton : verrouillé, puis prêt, avec un reflet qui passe.
   const bx = 850;
   const by = 290;
   const bw = 330;
   b += `<rect x="${bx}" y="${by}" width="${bw}" height="54" rx="14" fill="${C.card2}" stroke="${C.line}"/>`;
-  b += pendant(D, 0.02, 0.64, text(bx + bw / 2, by + 33, t('Photo possible à moins de 100 m', 'Photo allowed within 100 m'), { size: 15, color: C.faint, weight: 600, anchor: 'middle' }), 0.015);
+  b += pendant(D, 0.02, entree, text(bx + bw / 2, by + 33, t('Photo possible à moins de 100 m', 'Photo allowed within 100 m'), { size: 15, color: C.faint, weight: 600, anchor: 'middle' }), 0.015);
   b += `<clipPath id="bouton"><rect x="${bx}" y="${by}" width="${bw}" height="54" rx="14"/></clipPath>`;
   b += pendant(
     D,
-    0.65,
-    0.96,
+    entree + 0.01,
+    0.94,
     `<rect x="${bx}" y="${by}" width="${bw}" height="54" rx="14" fill="url(#degrade)"/>` +
       text(bx + bw / 2, by + 34, t('Prendre la photo', 'Take the photo'), { size: 17, color: C.night, weight: 700, anchor: 'middle' }) +
-      `<g clip-path="url(#bouton)"><rect y="${by}" width="70" height="54" fill="#fff" opacity=".45" transform="skewX(-20)">${anim(D, 'x', [[0, bx - 120], [0.7, bx - 120], [0.78, bx + bw + 60], [1, bx + bw + 60]])}</rect></g>`,
+      `<g clip-path="url(#bouton)"><rect y="${by}" width="70" height="54" fill="#fff" opacity=".45" transform="skewX(-20)">${anim(D, 'x', [[0, bx - 120], [entree + 0.08, bx - 120], [entree + 0.16, bx + bw + 60], [1, bx + bw + 60]])}</rect></g>`,
   );
 
+  const m0 = Math.round(echantillons[0].m / 10) * 10;
   return svg(
     W,
     H,
     b,
     t(
-      "Animation : sur une carte, un joueur marche vers le lieu du jour, entouré d'une zone de cent mètres et d'ondes de radar. À droite, une jauge circulaire se remplit pendant que la distance descend, 1,2 km, 640 m, 310 m, 150 m. Quand le joueur entre dans la zone, la jauge est pleine, une coche apparaît et le bouton « Prendre la photo » se déverrouille.",
-      'Animation: on a map, a player walks towards the spot of the day, surrounded by a hundred metre zone and radar waves. On the right, a circular gauge fills up while the distance drops, 1.2 km, 640 m, 310 m, 150 m. When the player enters the zone, the gauge is full, a tick appears and the "Take the photo" button unlocks.',
+      `Animation : sur une carte, un joueur suit un itinéraire le long des rues, trois virages, jusqu'au lieu du jour entouré d'une zone de cent mètres et d'ondes de radar. À droite, une jauge circulaire se remplit pendant que la distance descend depuis ${m0} mètres. Quand le joueur entre dans la zone, la jauge est pleine, une coche apparaît et le bouton « Prendre la photo » se déverrouille.`,
+      `Animation: on a map, a player follows a route along the streets, three turns, to the spot of the day surrounded by a hundred metre zone and radar waves. On the right, a circular gauge fills while the distance drops from ${m0} metres. When the player enters the zone, the gauge is full, a tick appears and the "Take the photo" button unlocks.`,
     ),
   );
 }
@@ -558,10 +614,334 @@ function rappel() {
   );
 }
 
+// --- 7. La vitrine : les vrais écrans, dans un téléphone ------------------
+
+function vitrine() {
+  const D = 21;
+  const W = 1280;
+  const H = 640;
+  const ecrans = [
+    [t('Connexion', 'Sign in'), t('Un compte, un pseudo.', 'One account, one nickname.'), t('En démo, n’importe quelle adresse suffit.', 'In the demo, any address will do.')],
+    [t('Le lieu du jour', "Today's spot"), t('La carte, la zone de cent mètres,', 'The map, the hundred metre zone,'), t('la note du lieu et la distance qui reste.', 'the note on the place and the distance left.')],
+    [t('Sur place', 'On site'), t('La jauge est pleine, le bouton s’allume.', 'The gauge is full, the button lights up.'), t('Il n’y a plus qu’à déclencher.', 'All that is left is to shoot.')],
+    [t('Validé', 'Validated'), t('La coche se dessine, les confettis partent,', 'The tick draws itself, confetti bursts out,'), t('les points tombent.', 'the points come in.')],
+    [t('Le classement', 'The leaderboard'), t('Sa place, le podium,', 'Your rank, the podium,'), t('et la série en cours de chacun.', 'and everyone’s current streak.')],
+    [t('Le profil', 'The profile'), t('Ses chiffres, les lieux découverts', 'Your numbers, the places found'), t('et l’heure du prochain rappel.', 'and the time of the next reminder.')],
+  ];
+  const n = ecrans.length;
+  const tranche = 1 / n;
+  const glisse = 0.022;
+
+  // Le téléphone.
+  const ew = 250;
+  const eh = Math.round((ew * 2400) / 1080);
+  const px = 150;
+  const py = (H - eh) / 2;
+  let b = '';
+  b += `<ellipse cx="${px + ew / 2}" cy="${py + eh / 2}" rx="${ew}" ry="${eh / 2}" fill="url(#halo)" opacity=".7"/>`;
+  b += `<rect x="${px - 10}" y="${py - 10}" width="${ew + 20}" height="${eh + 20}" rx="38" fill="#05090C" stroke="${C.line}" stroke-width="2"/>`;
+  b += `<clipPath id="ecran"><rect x="${px}" y="${py}" width="${ew}" height="${eh}" rx="28"/></clipPath>`;
+  let bande = '';
+  ecrans.forEach((_, i) => {
+    const donnees = fs.readFileSync(path.join(__dirname, 'vitrine', `0${i + 1}.jpg`)).toString('base64');
+    bande += `<image x="${px + i * ew}" y="${py}" width="${ew}" height="${eh}" preserveAspectRatio="xMidYMid slice" href="data:image/jpeg;base64,${donnees}"/>`;
+  });
+  const etapes = [];
+  ecrans.forEach((_, i) => {
+    const a = i * tranche;
+    etapes.push([a + glisse, `${-i * ew} 0`], [a + tranche, `${-i * ew} 0`]);
+  });
+  etapes.push([1, `0 0`]);
+  b += `<g clip-path="url(#ecran)"><g>${move(D, [[0, '0 0'], ...etapes])}${bande}</g></g>`;
+  b += `<rect x="${px + ew / 2 - 34}" y="${py + 10}" width="68" height="18" rx="9" fill="#05090C"/>`;
+
+  // À droite : le titre de l'écran, deux lignes, et l'avancement.
+  const tx = 560;
+  b += text(tx, 150, t("L'APPLICATION", 'THE APP'), { size: 12, color: C.faint, font: MONO, weight: 700, extra: 'letter-spacing="2"' });
+  ecrans.forEach(([titre, l1, l2], i) => {
+    const a = i * tranche + glisse;
+    const z = (i + 1) * tranche;
+    b += pendant(
+      D,
+      a,
+      z,
+      `<g>${move(D, [[0, '0 14'], [a, '0 14'], [a + 0.02, '0 0'], [1, '0 0']])}` +
+        text(tx, 250, `0${i + 1}`, { size: 18, color: C.accent, font: MONO, weight: 700 }) +
+        text(tx + 34, 250, `/ 0${n}`, { size: 18, color: C.faint, font: MONO }) +
+        text(tx, 320, titre, { size: 52, color: C.title, weight: 800 }) +
+        text(tx, 372, l1, { size: 22, color: C.text }) +
+        text(tx, 404, l2, { size: 22, color: C.text }) +
+        '</g>',
+      0.012,
+    );
+  });
+  // Les pastilles d'avancement : celle de l'écran affiché s'allonge.
+  ecrans.forEach((_, i) => {
+    const x = tx + i * 34;
+    const a = i * tranche;
+    const z = (i + 1) * tranche;
+    b += `<rect x="${x}" y="470" height="8" rx="4">${anim(D, 'width', [[0, i === 0 ? 26 : 8], [a, 8], [a + glisse, 26], [z, 26], [z + glisse, 8]].filter((p) => p[0] <= 1))}${anim(D, 'fill', [[0, i === 0 ? C.accent : C.line], [a, C.line], [a + 0.001, C.accent], [z, C.accent], [z + 0.001, C.line]].filter((p) => p[0] <= 1), { discrete: true })}</rect>`;
+  });
+  b += text(tx, 530, t('Captures de la version de démonstration, sur un Pixel 7.', 'Screenshots of the demo build, on a Pixel 7.'), { size: 14, color: C.faint });
+
+  return svg(
+    W,
+    H,
+    b,
+    t(
+      'Animation : un téléphone fait défiler six vrais écrans de BeVannes : la connexion, le lieu du jour avec sa carte, l’arrivée sur place avec la jauge pleine, la validation avec sa coche et ses confettis, le classement avec son podium, et le profil.',
+      'Animation: a phone scrolls through six real BeVannes screens: sign in, the spot of the day with its map, arriving on site with the gauge full, the validation with its tick and confetti, the leaderboard with its podium, and the profile.',
+    ),
+  );
+}
+
+// --- 8. Les dix-neuf lieux, dans l'ordre du tirage ------------------------
+
+/** Le tirage, porté de lib/domain/jour.dart à l'identique. */
+function hasard(graine) {
+  let e = Number(BigInt(graine) & 0xffffffffn);
+  const suivant = () => {
+    e = (e + 0x6d2b79f5) >>> 0;
+    let x = e;
+    x = Math.imul(x ^ (x >>> 15), x | 1) >>> 0;
+    x = (x ^ ((x + (Math.imul(x ^ (x >>> 7), x | 61) >>> 0)) >>> 0)) >>> 0;
+    return (x ^ (x >>> 14)) >>> 0;
+  };
+  return { sous: (m) => suivant() % m };
+}
+function ordreDuCycle(cycle, nb) {
+  const o = Array.from({ length: nb }, (_, i) => i);
+  const h = hasard(BigInt(cycle) * 2654435761n);
+  for (let i = nb - 1; i > 0; i--) {
+    const j = h.sous(i + 1);
+    [o[i], o[j]] = [o[j], o[i]];
+  }
+  return o;
+}
+function indexDuLieu(jour, nb) {
+  if (nb === 1) return 0;
+  if (nb === 2) return jour % 2;
+  const cycle = Math.floor(jour / nb);
+  const o = ordreDuCycle(cycle, nb);
+  const prec = ordreDuCycle(cycle - 1, nb).at(-1);
+  if (o[0] === prec) [o[0], o[1]] = [o[1], prec];
+  return o[jour % nb];
+}
+
+function lieux() {
+  const tous = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'assets', 'lieux.json'), 'utf8')).lieux;
+  const nb = tous.length;
+  const D = nb * 0.9 + 3;
+  const W = 1280;
+  const H = 560;
+  // Le cycle en cours au 24 septembre 2026, jour 20 720.
+  const jour0 = Math.floor(20720 / nb) * nb;
+  const ordre = Array.from({ length: nb }, (_, i) => indexDuLieu(jour0 + i, nb));
+  const debut = 0.04;
+  const pas = 0.9 / D;
+
+  // Deux vues : toute la ville, et le centre agrandi.
+  const cosLat = Math.cos((47.65 * Math.PI) / 180);
+  const vue = (bornes, x, y, w, h) => {
+    const [la0, la1, lo0, lo1] = bornes;
+    return (l) => [x + ((l.longitude - lo0) / (lo1 - lo0)) * w, y + ((la1 - l.latitude) / (la1 - la0)) * h];
+  };
+  // Ville : de Conleau (sud-ouest) à Saint-Patern (nord-est).
+  const villeB = [47.628, 47.664, -2.779, -2.749];
+  const vh = 440;
+  const vw = Math.round((vh * (villeB[3] - villeB[2]) * cosLat) / (villeB[1] - villeB[0]));
+  const vx = 60;
+  const vy = 80;
+  const ville = vue(villeB, vx, vy, vw, vh);
+  // Centre : la ville close et le port.
+  const centreB = [47.6505, 47.6605, -2.7625, -2.7515];
+  const ch = 440;
+  const cw = Math.round((ch * (centreB[3] - centreB[2]) * cosLat) / (centreB[1] - centreB[0]));
+  const cx0 = vx + vw + 70;
+  const centre = vue(centreB, cx0, vy, cw, ch);
+  const dansCentre = (l) => l.latitude > centreB[0] && l.latitude < centreB[1] && l.longitude > centreB[2] && l.longitude < centreB[3];
+
+  let b = '';
+  b += etape(60, 40, t('LES LIEUX', 'THE PLACES'), '');
+  b += text(60, 62, t('Un cycle de dix-neuf jours : chaque lieu une fois, jamais deux jours de suite', 'A nineteen day cycle: every place once, never twice in a row'), { size: 15, color: C.title, weight: 600 });
+  const cadre = (x, y, w, h, label) =>
+    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="18" fill="#0A1614" stroke="${C.line}"/>` +
+    // Un quadrillage discret, cent mètres environ entre deux traits.
+    `<g stroke="#10231F" stroke-width="1">${Array.from({ length: Math.floor(w / 40) }, (_, i) => `<path d="M${x + 20 + i * 40} ${y + 8} V${y + h - 8}"/>`).join('')}${Array.from({ length: Math.floor(h / 40) }, (_, i) => `<path d="M${x + 8} ${y + 20 + i * 40} H${x + w - 8}"/>`).join('')}</g>` +
+    text(x + 14, y + h - 14, label, { size: 12, color: C.faint, font: MONO });
+  b += cadre(vx, vy, vw, vh, t('VANNES', 'VANNES'));
+  b += cadre(cx0, vy, cw, ch, t('LE CENTRE', 'THE CENTRE'));
+  // Le rectangle du centre, dessiné sur la vue de la ville.
+  const [ax, ay] = ville({ latitude: centreB[1], longitude: centreB[2] });
+  const [bx2, by2] = ville({ latitude: centreB[0], longitude: centreB[3] });
+  b += `<rect x="${ax}" y="${ay}" width="${bx2 - ax}" height="${by2 - ay}" fill="none" stroke="${C.accent}" stroke-opacity=".5" stroke-dasharray="4 4"/>`;
+  b += `<path d="M${bx2} ${ay} L${cx0} ${vy}" stroke="${C.accent}" stroke-opacity=".25" stroke-dasharray="4 6"/><path d="M${bx2} ${by2} L${cx0} ${vy + ch}" stroke="${C.accent}" stroke-opacity=".25" stroke-dasharray="4 6"/>`;
+
+  // Chaque lieu : un point gris, qui s'allume le jour où il tombe, puis
+  // reste allumé jusqu'à la fin du cycle.
+  const point = (x, y, a, courant) =>
+    `<circle cx="${x}" cy="${y}" r="4" fill="${C.faint}"/>` +
+    `<circle cx="${x}" cy="${y}" r="6" fill="url(#degrade)" opacity="0">${appear(D, a, 0.96, 0.01)}</circle>` +
+    `<circle cx="${x}" cy="${y}" fill="none" stroke="${C.accent}" stroke-width="2" opacity="0">${anim(D, 'opacity', [[0, 0], [a, 0], [a + 0.005, 1], [a + courant, 0]])}${anim(D, 'r', [[0, 6], [a, 6], [a + courant, 30]])}</circle>`;
+  ordre.forEach((idx, i) => {
+    const l = tous[idx];
+    const a = debut + i * pas;
+    const [x, y] = ville(l);
+    b += point(x, y, a, pas * 1.4);
+    if (dansCentre(l)) {
+      const [x2, y2] = centre(l);
+      b += point(x2, y2, a, pas * 1.4);
+    }
+  });
+
+  // À droite : le jour du cycle, le lieu, et le compteur.
+  const tx = cx0 + cw + 60;
+  b += text(tx, 150, t('JOUR DU CYCLE', 'DAY OF THE CYCLE'), { size: 12, color: C.faint, font: MONO, weight: 700, extra: 'letter-spacing="2"' });
+  ordre.forEach((idx, i) => {
+    const l = tous[idx];
+    const a = debut + i * pas;
+    const z = i < nb - 1 ? a + pas : 0.96;
+    const date = new Date(Date.UTC(1970, 0, 1) + (jour0 + i) * 86400000);
+    const jourTexte = date.toLocaleDateString(LG === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'long', timeZone: 'UTC' });
+    b += pendant(
+      D,
+      a,
+      z,
+      text(tx, 200, `${String(i + 1).padStart(2, '0')}`, { size: 44, color: C.accent, weight: 800, font: MONO }) +
+        text(tx + 70, 200, `/ ${nb}`, { size: 22, color: C.faint, font: MONO }) +
+        text(tx, 236, jourTexte, { size: 15, color: C.faint }) +
+        text(tx, 290, l.nom, { size: 26, color: C.title, weight: 700 }) +
+        text(tx, 318, l.quartier, { size: 15, color: C.text }),
+      0.004,
+    );
+  });
+  b += text(tx, 400, t('Le même ordre sur tous les téléphones,', 'The same order on every phone,'), { size: 14, color: C.faint });
+  b += text(tx, 420, t('calculé à partir du numéro du jour.', 'worked out from the day number.'), { size: 14, color: C.faint });
+
+  return svg(
+    W,
+    H,
+    b,
+    t(
+      `Animation : deux cartes de Vannes, la ville entière et le centre agrandi, montrent les dix-neuf lieux du jeu à leur vraie position. Ils s'allument un par un dans l'ordre du cycle en cours : ${ordre.map((i) => tous[i].nom).join(', ')}.`,
+      `Animation: two maps of Vannes, the whole town and a close-up of the centre, show the game's nineteen places at their real position. They light up one by one in the order of the current cycle: ${ordre.map((i) => tous[i].nom).join(', ')}.`,
+    ),
+  );
+}
+
+// --- 9. Une validation, de bout en bout -----------------------------------
+
+function parcours() {
+  const D = 11;
+  const W = 1280;
+  const H = 400;
+  let b = '';
+  b += etape(60, 50, t('UNE VALIDATION', 'ONE VALIDATION'), t('Du déclencheur au classement, en une transaction', 'From shutter to leaderboard, in one transaction'));
+
+  const postes = [
+    [t('Téléphone', 'Phone'), [t('photo 3:4', '3:4 photo'), t('GPS : 20 m du lieu', 'GPS: 20 m away')]],
+    ['Storage', ['photos/20720/', 'toi.jpg']],
+    ['Firestore', [t('validation 20720_toi', 'validation 20720_toi'), t('joueur : série, points', 'player: streak, points')]],
+    [t('Règles', 'Rules'), [t('série 3 → 4', 'streak 3 → 4'), '10 + 2 × 3 = 16 ✓']],
+    [t('Classement', 'Leaderboard'), [t('+16 points', '+16 points'), t('4e sur 12', '4th of 12')]],
+  ];
+  const pw = 196;
+  const ph = 150;
+  const y = 150;
+  const x0 = 60;
+  const ecart = (W - 2 * x0 - postes.length * pw) / (postes.length - 1);
+  const arrivees = postes.map((_, i) => 0.06 + i * 0.16);
+
+  // Les liaisons, puis le paquet qui voyage de poste en poste.
+  for (let i = 0; i < postes.length - 1; i++) {
+    const xa = x0 + i * (pw + ecart) + pw;
+    const xb = xa + ecart;
+    b += `<path d="M${xa + 6} ${y + ph / 2} H${xb - 6}" stroke="${C.line}" stroke-width="3" stroke-linecap="round"/>`;
+    b += `<path d="M${xa + 6} ${y + ph / 2} H${xb - 6}" stroke="${C.accent}" stroke-width="3" stroke-linecap="round" stroke-dasharray="${ecart}" stroke-dashoffset="${ecart}">${anim(D, 'stroke-dashoffset', [[0, ecart], [arrivees[i] + 0.04, ecart], [arrivees[i + 1], 0], [0.94, 0], [0.97, ecart]])}</path>`;
+  }
+  const trajet = [[0, `${x0 + pw / 2} ${y + ph / 2}`]];
+  postes.forEach((_, i) => {
+    const cx = x0 + i * (pw + ecart) + pw / 2;
+    trajet.push([arrivees[i], `${cx} ${y + ph / 2}`], [arrivees[i] + 0.04, `${cx} ${y + ph / 2}`]);
+  });
+  b += `<g opacity="0">${appear(D, 0.03, 0.8)}<g>${move(D, trajet)}<circle r="22" fill="url(#halo)"/><circle r="8" fill="url(#degrade)" stroke="${C.bg}" stroke-width="3"/></g></g>`;
+
+  postes.forEach(([titre, lignes], i) => {
+    const x = x0 + i * (pw + ecart);
+    const a = arrivees[i];
+    b += `<rect x="${x}" y="${y}" width="${pw}" height="${ph}" rx="18" fill="${C.card}" stroke="${C.accent}" stroke-width="2">${anim(D, 'stroke-opacity', [[0, 0.12], [a, 0.12], [a + 0.02, 1], [0.94, 1], [0.97, 0.12]])}</rect>`;
+    b += text(x + 18, y + 36, titre, { size: 19, color: C.title, weight: 700 });
+    lignes.forEach((l, j) => {
+      b += pendant(D, a + 0.02 + j * 0.02, 0.94, text(x + 18, y + 80 + j * 26, l, { size: 14, color: j === 1 && i === 3 ? C.accent : C.text, font: MONO }));
+    });
+  });
+  b += pendant(D, arrivees[4] + 0.04, 0.94, text(x0, 360, t('Tout passe, ou rien : si les règles refusent, la photo et les points restent de côté.', 'All or nothing: if the rules refuse, the photo and the points are left out.'), { size: 15, color: C.title }));
+
+  return svg(
+    W,
+    H,
+    b,
+    t(
+      "Animation : une validation traverse cinq postes. Le téléphone envoie une photo 3:4 prise à 20 mètres du lieu ; Storage la range dans photos/20720/toi.jpg ; Firestore écrit la validation et met à jour le joueur ; les règles recalculent la série, de 3 à 4, et le gain, 10 + 2 × 3 = 16 ; le classement affiche +16 points et la 4e place. Tout passe, ou rien.",
+      'Animation: a validation passes through five stations. The phone sends a 3:4 photo taken 20 metres from the spot; Storage files it under photos/20720/toi.jpg; Firestore writes the validation and updates the player; the rules recompute the streak, from 3 to 4, and the gain, 10 + 2 × 3 = 16; the leaderboard shows +16 points and 4th place. All or nothing.',
+    ),
+  );
+}
+
+// --- 10. Une triche, refusée ----------------------------------------------
+
+function triche() {
+  const D = 12;
+  const W = 1280;
+  const H = 420;
+  const ok = '#3DD68C';
+  const ko = '#FF6B81';
+  let b = '';
+  b += etape(60, 50, t('LES RÈGLES', 'THE RULES'), t('Le téléphone propose, Firestore vérifie', 'The phone proposes, Firestore checks'));
+
+  // La porte des règles, au milieu.
+  const gx = 610;
+  b += `<rect x="${gx}" y="100" width="170" height="290" rx="20" fill="${C.card}" stroke="${C.line}"/>`;
+  b += text(gx + 85, 132, 'firestore.rules', { size: 13, color: C.faint, anchor: 'middle', font: MONO });
+
+  const couloir = (y, titre, points, a, bon) => {
+    const couleur = bon ? ok : ko;
+    let c = '';
+    c += text(60, y - 22, titre, { size: 15, color: C.title, weight: 700 });
+    // La requête qui part vers la porte.
+    c += `<g opacity="0">${appear(D, a, 0.94, 0.02)}<g>${move(D, [[0, '0 0'], [a, '0 0'], [a + 0.1, '300 0'], [1, '300 0']])}
+  <rect x="60" y="${y}" width="230" height="84" rx="14" fill="${C.card2}" stroke="${C.line}"/>
+  ${text(78, y + 30, 'points : 136 → ' + points, { size: 15, color: C.title, font: MONO })}
+  ${text(78, y + 58, t('série : 3 → 4', 'streak: 3 → 4'), { size: 15, color: C.text, font: MONO })}
+  </g></g>`;
+    // Le calcul, dans la porte.
+    c += pendant(D, a + 0.11, bon ? 0.48 : 0.94, text(gx + 85, y + 26, '136 + 16', { size: 17, color: C.title, anchor: 'middle', font: MONO, weight: 700 }) + text(gx + 85, y + 54, bon ? '= 152 ✓' : '≠ 999 ✗', { size: 19, color: couleur, anchor: 'middle', font: MONO, weight: 700 }));
+    // Le verdict, à droite.
+    c += `<g opacity="0">${appear(D, a + 0.16, 0.94, 0.02)}<g>${bon ? move(D, [[0, '-20 0'], [a + 0.16, '-20 0'], [a + 0.2, '0 0'], [1, '0 0']]) : move(D, [[0, '0 0'], [a + 0.16, '0 0'], [a + 0.17, '-8 0'], [a + 0.18, '8 0'], [a + 0.19, '-6 0'], [a + 0.2, '0 0'], [1, '0 0']])}
+  <rect x="840" y="${y}" width="380" height="84" rx="14" fill="${couleur}" fill-opacity=".1" stroke="${couleur}" stroke-opacity=".7"/>
+  ${text(862, y + 34, bon ? t('Accepté', 'Accepted') : t('Refusé', 'Refused'), { size: 20, color: couleur, weight: 800 })}
+  ${text(862, y + 60, bon ? t('validation et points écrits ensemble', 'validation and points written together') : 'permission-denied', { size: 14, color: C.text, font: bon ? SANS : MONO })}
+  </g></g>`;
+    return c;
+  };
+  b += couloir(150, t('Un téléphone honnête', 'An honest phone'), '152', 0.04, true);
+  b += couloir(290, t('Un téléphone trafiqué', 'A tampered phone'), '999', 0.5, false);
+
+  return svg(
+    W,
+    H,
+    b,
+    t(
+      "Animation : deux téléphones envoient leurs points. Le premier propose 136 → 152 avec une série de 3 à 4 : les règles refont le calcul, 136 + 16 = 152, et acceptent. Le second propose 136 → 999 : 136 + 16 ne fait pas 999, les règles refusent avec permission-denied.",
+      'Animation: two phones send their points. The first proposes 136 → 152 with a streak going from 3 to 4: the rules redo the maths, 136 + 16 = 152, and accept. The second proposes 136 → 999: 136 + 16 is not 999, the rules refuse with permission-denied.',
+    ),
+  );
+}
+
 // --- Écriture -------------------------------------------------------------
 
 fs.mkdirSync(OUT, { recursive: true });
-for (const [nom, f] of Object.entries({ tirage, approche, cadrage, serie, mur, rappel })) {
+for (const [nom, f] of Object.entries({ vitrine, tirage, approche, mur, rappel, lieux, parcours, triche, serie, cadrage })) {
   const contenu = f();
   fs.writeFileSync(path.join(OUT, `${nom}.svg`), contenu);
   console.log(`  ${nom}.svg  ${(contenu.length / 1024).toFixed(1)} Ko`);

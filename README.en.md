@@ -7,8 +7,6 @@
 
 <img src="docs/en/banniere.png" alt="BeVannes, BeReal meets GeoGuessr" width="100%">
 
-<a href="https://github.com/Cybertrist/BeVannes/releases/latest/download/BeVannes.apk"><img src="docs/en/telecharger.png" alt="Download BeVannes, Android app, latest version, demo mode" width="420"></a>
-
 </div>
 
 **BeReal meets GeoGuessr: one place a day, and you have to go there to score.**
@@ -16,6 +14,10 @@
 Every day, the app picks a place in Vannes, the same one for everyone. To score, you have to go there: the photo is only accepted within a hundred metres of the spot, GPS as proof. Each place comes with a short historical note, which quietly turns the game into a guided tour.
 
 The starting idea: we walk past the same streets every day without ever stopping. A playful constraint is sometimes enough to change that.
+
+<p align="center"><a href="https://github.com/Cybertrist/BeVannes/releases/latest/download/BeVannes.apk"><img src="docs/en/telecharger.png" alt="Download BeVannes, Android app, latest version, demo mode" width="440"></a></p>
+
+<img src="docs/en/schemas/vitrine.svg" alt="Animation: a phone scrolls through six real BeVannes screens: sign in, the spot of the day with its map, arriving on site with the gauge full, the validation with its tick and confetti, the leaderboard with its podium, and the profile." width="100%">
 
 <img src="docs/en/sections/s01.png" alt="01 How it works" width="100%">
 
@@ -27,7 +29,7 @@ A game plays out in four beats.
 
 **On site.** The map shows the spot and its hundred metre zone. The ring fills as you get closer, and the button only lights up once you are inside.
 
-<img src="docs/en/schemas/approche.svg" alt="Animation: on a map, a player walks towards the spot of the day, surrounded by a hundred metre zone and radar waves. On the right, a circular gauge fills up while the distance drops, 1.2 km, 640 m, 310 m, 150 m. When the player enters the zone, the gauge is full, a tick appears and the " width="100%">
+<img src="docs/en/schemas/approche.svg" alt="Animation: on a map, a player follows a route along the streets, three turns, to the spot of the day surrounded by a hundred metre zone and radar waves. On the right, a circular gauge fills while the distance drops from 620 metres. When the player enters the zone, the gauge is full, a tick appears and the " width="100%">
 
 **Today's wall.** Other players' photos stay locked until you have posted yours.
 
@@ -37,14 +39,7 @@ A game plays out in four beats.
 
 <img src="docs/en/schemas/rappel.svg" alt="Animation: a clock's hands jump from one time to the next, Wednesday 17:54, Thursday 14:43, Friday 13:18, Saturday 17:51. At each time, three phones buzz together and the same notification drops down: " width="100%">
 
-<p align="center">
-  <img src="docs/captures/jour.png" alt="On site, in French: the approach gauge is full and the Take the photo button lights up" width="24%">
-  <img src="docs/captures/bravo.png" alt="After posting, in French: the tick draws itself, confetti bursts out, sixteen points and a four day streak" width="24%">
-  <img src="docs/captures/classement.png" alt="The leaderboard, in French: the player's rank, the podium, then every player with their current streak" width="24%">
-  <img src="docs/captures/profil.png" alt="The profile, in French: points, places validated, current streak, best streak and how much of Vannes has been found" width="24%">
-</p>
 
-> The screenshots show the app in French, the only language it ships in.
 
 <img src="docs/en/sections/s02.png" alt="02 Under the hood" width="100%">
 
@@ -53,6 +48,14 @@ A Flutter app for Android, with Firebase behind it: Authentication for accounts,
 Three pieces hold the game together.
 
 <img src="docs/en/schemas/fonctions.png" alt="The draw: a fixed-seed shuffle, every phone works out the same spot and nobody has to write it to the database. The distance: haversine, a hundred metre radius, a fresh fix when posting, a mock location flagged by Android is rejected. The rules: Firestore recomputes streak and points on every validation, the phone cannot award them to itself." width="100%">
+
+A validation goes through five steps, and it all goes through in one block or not at all.
+
+<img src="docs/en/schemas/parcours.svg" alt="Animation: a validation passes through five stations. The phone sends a 3:4 photo taken 20 metres from the spot; Storage files it under photos/20720/toi.jpg; Firestore writes the validation and updates the player; the rules recompute the streak, from 3 to 4, and the gain, 10 + 2 × 3 = 16; the leaderboard shows +16 points and 4th place. All or nothing." width="100%">
+
+The phone only proposes its points: Firestore redoes the maths and refuses anything that does not add up.
+
+<img src="docs/en/schemas/triche.svg" alt="Animation: two phones send their points. The first proposes 136 → 152 with a streak going from 3 to 4: the rules redo the maths, 136 + 16 = 152, and accept. The second proposes 136 → 999: 136 + 16 is not 999, the rules refuse with permission-denied." width="100%">
 
 Points are counted by the day: ten per spot, two more per day in a row, and the bonus stops at ten.
 
@@ -103,6 +106,10 @@ flutter build apk --release --dart-define-from-file=firebase.env.json
 > Client-side Firebase API keys are not secrets, they can be read from any APK. What protects the data are the **rules** in `firestore.rules` and `storage.rules`: a player only writes their own points, recomputed by the server, and only sees a day's photos after validating that day themselves.
 
 <img src="docs/en/sections/s04.png" alt="04 Adding places" width="100%">
+
+Nineteen places today, from the cathedral to the Conleau headland, each coming up once per cycle.
+
+<img src="docs/en/schemas/lieux.svg" alt="Animation: two maps of Vannes, the whole town and a close-up of the centre, show the game's nineteen places at their real position. They light up one by one in the order of the current cycle: Porte Poterne, Pointe de Conleau, Préfecture du Morbihan, Cathédrale Saint-Pierre, Place Gambetta, Porte Saint-Vincent, Église Saint-Patern, Porte Prison, Jardin des remparts, Lavoirs de la Garenne, Hôtel de Limur, La Cohue, Place des Lices, Parc du Golfe, Le port, Hôtel de ville, Vannes et sa femme, Place Henri-IV, Château de l'Hermine." width="100%">
 
 Places live in `assets/lieux.json`, bundled with the app.
 

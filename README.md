@@ -7,8 +7,6 @@
 
 <img src="docs/banniere.png" alt="BeVannes, BeReal rencontre GeoGuessr" width="100%">
 
-<a href="https://github.com/Cybertrist/BeVannes/releases/latest/download/BeVannes.apk"><img src="docs/telecharger.png" alt="Télécharger BeVannes, application Android, dernière version, mode démo" width="420"></a>
-
 </div>
 
 **BeReal rencontre GeoGuessr : un lieu par jour, il faut y aller pour marquer.**
@@ -16,6 +14,10 @@
 Chaque jour, l'application désigne un lieu de Vannes, le même pour tout le monde. Pour marquer des points, il faut s'y rendre : la photo n'est acceptée qu'à moins de cent mètres du lieu, GPS à l'appui. Chaque lieu s'accompagne d'une courte note historique, ce qui transforme la partie en visite guidée sans le vouloir.
 
 L'idée de départ : on passe devant les mêmes rues tous les jours sans jamais s'arrêter. Une contrainte ludique suffit parfois à changer ça.
+
+<p align="center"><a href="https://github.com/Cybertrist/BeVannes/releases/latest/download/BeVannes.apk"><img src="docs/telecharger.png" alt="Télécharger BeVannes, application Android, dernière version, mode démo" width="440"></a></p>
+
+<img src="docs/schemas/vitrine.svg" alt="Animation : un téléphone fait défiler six vrais écrans de BeVannes : la connexion, le lieu du jour avec sa carte, l’arrivée sur place avec la jauge pleine, la validation avec sa coche et ses confettis, le classement avec son podium, et le profil." width="100%">
 
 <img src="docs/sections/s01.png" alt="01 Fonctionnement" width="100%">
 
@@ -27,7 +29,7 @@ Une partie tient en quatre temps.
 
 **Sur place.** La carte montre le lieu et sa zone de cent mètres. L'anneau se remplit à mesure qu'on approche, et le bouton ne s'allume qu'une fois dedans.
 
-<img src="docs/schemas/approche.svg" alt="Animation : sur une carte, un joueur marche vers le lieu du jour, entouré d'une zone de cent mètres et d'ondes de radar. À droite, une jauge circulaire se remplit pendant que la distance descend, 1,2 km, 640 m, 310 m, 150 m. Quand le joueur entre dans la zone, la jauge est pleine, une coche apparaît et le bouton « Prendre la photo » se déverrouille." width="100%">
+<img src="docs/schemas/approche.svg" alt="Animation : sur une carte, un joueur suit un itinéraire le long des rues, trois virages, jusqu'au lieu du jour entouré d'une zone de cent mètres et d'ondes de radar. À droite, une jauge circulaire se remplit pendant que la distance descend depuis 620 mètres. Quand le joueur entre dans la zone, la jauge est pleine, une coche apparaît et le bouton « Prendre la photo » se déverrouille." width="100%">
 
 **Le mur du jour.** Les photos des autres restent verrouillées tant qu'on n'a pas publié la sienne.
 
@@ -37,12 +39,6 @@ Une partie tient en quatre temps.
 
 <img src="docs/schemas/rappel.svg" alt="Animation : les aiguilles d'une horloge sautent d'une heure à l'autre, mercredi 17 h 54, jeudi 14 h 43, vendredi 13 h 18, samedi 17 h 51. À chaque heure, trois téléphones vibrent en même temps et la même notification descend : « C'est l'heure ! ». Le calcul se fait sur chaque téléphone, sans serveur." width="100%">
 
-<p align="center">
-  <img src="docs/captures/jour.png" alt="Sur place : la jauge d’approche est pleine, et le bouton « Prendre la photo » s’allume" width="24%">
-  <img src="docs/captures/bravo.png" alt="Après la publication : la coche se dessine, les confettis partent, seize points et une série de quatre jours" width="24%">
-  <img src="docs/captures/classement.png" alt="Le classement : la place du joueur, le podium, puis tous les joueurs avec leur série en cours" width="24%">
-  <img src="docs/captures/profil.png" alt="Le profil : points, lieux validés, série en cours, meilleure série et part de Vannes découverte" width="24%">
-</p>
 
 <img src="docs/sections/s02.png" alt="02 Sous le capot" width="100%">
 
@@ -51,6 +47,14 @@ Une application Flutter pour Android, avec Firebase derrière : Authentication p
 Trois pièces tiennent le jeu.
 
 <img src="docs/schemas/fonctions.png" alt="Le tirage : un mélange à graine fixe, chaque téléphone calcule le même lieu sans que personne ne l'écrive dans la base. La distance : haversine, rayon de cent mètres, mesure fraîche au moment de publier, une position fictive signalée par Android est refusée. Les règles : Firestore recalcule série et points à chaque validation, le téléphone ne peut pas se les attribuer." width="100%">
+
+Une validation traverse cinq étapes, et tout passe d'un bloc ou rien ne passe.
+
+<img src="docs/schemas/parcours.svg" alt="Animation : une validation traverse cinq postes. Le téléphone envoie une photo 3:4 prise à 20 mètres du lieu ; Storage la range dans photos/20720/toi.jpg ; Firestore écrit la validation et met à jour le joueur ; les règles recalculent la série, de 3 à 4, et le gain, 10 + 2 × 3 = 16 ; le classement affiche +16 points et la 4e place. Tout passe, ou rien." width="100%">
+
+Le téléphone ne fait que proposer ses points : Firestore refait le calcul et refuse ce qui ne tombe pas juste.
+
+<img src="docs/schemas/triche.svg" alt="Animation : deux téléphones envoient leurs points. Le premier propose 136 → 152 avec une série de 3 à 4 : les règles refont le calcul, 136 + 16 = 152, et acceptent. Le second propose 136 → 999 : 136 + 16 ne fait pas 999, les règles refusent avec permission-denied." width="100%">
 
 Les points se calculent au jour près : dix par lieu, deux de plus par jour de série, et le bonus s'arrête à dix.
 
@@ -101,6 +105,10 @@ flutter build apk --release --dart-define-from-file=firebase.env.json
 > Les clés d'API Firebase côté client ne sont pas des secrets, elles se lisent dans tout APK. Ce qui protège les données, ce sont les **règles** de `firestore.rules` et `storage.rules` : un joueur n'écrit que ses propres points, recalculés par le serveur, et ne voit les photos d'un jour qu'après avoir validé ce jour-là.
 
 <img src="docs/sections/s04.png" alt="04 Ajouter des lieux" width="100%">
+
+Dix-neuf lieux aujourd'hui, de la cathédrale à la pointe de Conleau, qui passent chacun une fois par cycle.
+
+<img src="docs/schemas/lieux.svg" alt="Animation : deux cartes de Vannes, la ville entière et le centre agrandi, montrent les dix-neuf lieux du jeu à leur vraie position. Ils s'allument un par un dans l'ordre du cycle en cours : Porte Poterne, Pointe de Conleau, Préfecture du Morbihan, Cathédrale Saint-Pierre, Place Gambetta, Porte Saint-Vincent, Église Saint-Patern, Porte Prison, Jardin des remparts, Lavoirs de la Garenne, Hôtel de Limur, La Cohue, Place des Lices, Parc du Golfe, Le port, Hôtel de ville, Vannes et sa femme, Place Henri-IV, Château de l'Hermine." width="100%">
 
 Les lieux vivent dans `assets/lieux.json`, embarqués dans l'application.
 
