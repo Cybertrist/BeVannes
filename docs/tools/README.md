@@ -27,9 +27,11 @@ ce qui rend impossible d'en corriger une en oubliant l'autre.
 
 ## Ce que fait chaque script
 
-- `figures.sh` : tout le contenu de ce dépôt, la bannière, les cinq
-  bandeaux de section et les deux grilles. C'est le seul
-  fichier à ouvrir pour changer un texte.
+- `figures.sh` : la bannière, les cinq bandeaux de section et la grille
+  des trois pièces.
+- `anime.js` : les six schémas animés, en SVG que GitHub joue dans une
+  balise `<img>`. `node docs/tools/anime.js`, et `LANGUE=en` pour
+  l'anglais.
 - `cartes.sh` : le gabarit des bannières 1280x320.
 - `bandeaux.sh` : le gabarit des bandeaux de section numérotés.
 - `grille.sh` : le gabarit des grilles à deux ou trois colonnes.

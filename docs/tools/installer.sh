@@ -10,7 +10,6 @@ pose () { [ -f "$1" ] || { echo "  manquant : $1"; return; }; cp "$1" "$DEST/$2"
 
 pose "png$SUF/f-bevannes.png" banniere.png
 for i in 01 02 03 04 05; do pose "sec$SUF/r-bevannes-$i.png" "sections/s$i.png"; done
-pose "grid$SUF/bv-jeu.png"       schemas/fonctionnement.png
 pose "grid$SUF/bv-fonctions.png" schemas/fonctions.png
 
 if [ "$LG" != en ]; then

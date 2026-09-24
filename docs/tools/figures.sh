@@ -1,6 +1,6 @@
 #!/bin/bash
-# Toutes les figures du README : la bannière, les cinq bandeaux de section
-# et les deux grilles.
+# Les figures fixes du README : la bannière, les cinq bandeaux de section
+# et la grille des trois pièces. Les schémas animés viennent d'anime.js.
 #
 # Les captures d'écran de docs/captures/ ne passent pas par ici : ce sont
 # de vraies captures de l'application, aucun script ne les refait.
@@ -34,13 +34,6 @@ rep bevannes "$A" \
 "$(t 'Installation' 'Installation')" \
 "$(t 'Ajouter des lieux' 'Adding places')" \
 "$(t 'Limites' 'Limits')"
-
-# ------------------------------------------------------ la règle du jeu
-grid bv-jeu "$A" 2 \
-"$(t 'Le lieu du jour' "Today's spot")|$(t 'Un lieu de Vannes tiré au sort, le même pour tout le monde, renouvelé à minuit. Chacun revient une fois par cycle.' 'A place in Vannes drawn at random, the same for everyone, renewed at midnight. Each one comes up once per cycle.')" \
-"$(t 'La validation sur place' 'Proof of presence')|$(t "La photo ne compte qu'à moins de cent mètres du lieu, GPS à l'appui. C'est toute la règle du jeu." 'The photo only counts within a hundred metres of the spot, GPS as proof. That is the whole rule of the game.')" \
-"$(t 'Le classement' 'The leaderboard')|$(t 'Dix points par lieu, un bonus pour chaque jour de série. Les photos des autres se dévoilent une fois la sienne publiée.' "Ten points per spot, a bonus for every day in a row. Other players' photos show up once yours is posted.")" \
-"$(t 'Le rappel' 'The reminder')|$(t 'Une heure différente chaque jour, la même pour tous, comme BeReal. Calculée sur le téléphone, sans serveur.' 'A different time every day, the same for everyone, like BeReal. Worked out on the phone, no server involved.')"
 
 # ----------------------------------------------------- ce qui tient le jeu
 grid bv-fonctions "$A" 3 \

@@ -19,11 +19,27 @@ The starting idea: we walk past the same streets every day without ever stopping
 
 <img src="docs/en/sections/s01.png" alt="01 How it works" width="100%">
 
-<img src="docs/en/schemas/fonctionnement.png" alt="Today's spot: a place in Vannes drawn at random, the same for everyone, renewed at midnight, each one comes up once per cycle. Proof of presence: the photo only counts within a hundred metres of the spot, GPS as proof, that is the whole rule of the game. The leaderboard: ten points per spot, a bonus for every day in a row, other players' photos show up once yours is posted. The reminder: a different time every day, the same for everyone, like BeReal, worked out on the phone, no server involved." width="100%">
+A game plays out in four beats.
+
+**The draw.** At midnight, every phone works out the spot of the day. Nobody writes it to the database, nobody gets to pick it.
+
+<img src="docs/en/schemas/tirage.svg" alt="Animation: a wheel scrolls through the places of Vannes, slows down and stops on Hôtel de Limur. At the same moment, three phones belonging to three players show the same spot: each one redoes the draw itself, no server involved." width="100%">
+
+**On site.** The map shows the spot and its hundred metre zone. The ring fills as you get closer, and the button only lights up once you are inside.
+
+<img src="docs/en/schemas/approche.svg" alt="Animation: on a map, a player walks towards the spot of the day, surrounded by a hundred metre zone and radar waves. On the right, a circular gauge fills up while the distance drops, 1.2 km, 640 m, 310 m, 150 m. When the player enters the zone, the gauge is full, a tick appears and the " width="100%">
+
+**Today's wall.** Other players' photos stay locked until you have posted yours.
+
+<img src="docs/en/schemas/mur.svg" alt="Animation: four photos of the day, from Maëlle, Yann, Erwan and Klervi, are locked. A fifth photo, yours, drops into the last slot. The locks then come off one after another and the four photos are revealed. Storage does the checking, not the app." width="100%">
+
+**The reminder.** One notification a day, at a time that changes every day but lands at the same moment for everyone.
+
+<img src="docs/en/schemas/rappel.svg" alt="Animation: a clock's hands jump from one time to the next, Wednesday 17:54, Thursday 14:43, Friday 13:18, Saturday 17:51. At each time, three phones buzz together and the same notification drops down: " width="100%">
 
 <p align="center">
-  <img src="docs/captures/jour.png" alt="Today's spot, in French: the map with the hundred metre validation zone, the place name, its historical note and the distance still to go" width="24%">
-  <img src="docs/captures/bravo.png" alt="After posting, in French: sixteen points earned and a four day streak" width="24%">
+  <img src="docs/captures/jour.png" alt="On site, in French: the approach gauge is full and the Take the photo button lights up" width="24%">
+  <img src="docs/captures/bravo.png" alt="After posting, in French: the tick draws itself, confetti bursts out, sixteen points and a four day streak" width="24%">
   <img src="docs/captures/classement.png" alt="The leaderboard, in French: the player's rank, the podium, then every player with their current streak" width="24%">
   <img src="docs/captures/profil.png" alt="The profile, in French: points, places validated, current streak, best streak and how much of Vannes has been found" width="24%">
 </p>
@@ -38,7 +54,17 @@ Three pieces hold the game together.
 
 <img src="docs/en/schemas/fonctions.png" alt="The draw: a fixed-seed shuffle, every phone works out the same spot and nobody has to write it to the database. The distance: haversine, a hundred metre radius, a fresh fix when posting, a mock location flagged by Android is rejected. The rules: Firestore recomputes streak and points on every validation, the phone cannot award them to itself." width="100%">
 
-The code is layered: `lib/domain` holds the game rules, free of Flutter and Firebase, and tested; `lib/data` holds storage, with a Firebase version and an in-memory demo version; `lib/ui` holds the screens. Photos are cropped to 3:4 on the phone before upload, so everyone sees the same frame.
+Points are counted by the day: ten per spot, two more per day in a row, and the bonus stops at ten.
+
+<img src="docs/en/schemas/serie.svg" alt="Animation: seven bars rise one after another, Monday to Sunday, +10, +12, +14, +16, +18, +20, +20. A flame lights up above every day of the streak, and a line marks the bonus cap. The total climbs to 110 points in one week; miss a day and the streak resets to 1." width="100%">
+
+Photos all share the same format, whatever the camera.
+
+<img src="docs/en/schemas/cadrage.svg" alt="Animation: a photo taken in 4:3 shows a city gate in the sun. Two dark bands drop on either side, leaving only a 3:4 portrait frame, which then moves to the right: 3:4, 1200 × 1600 JPEG, cropped on the phone before upload." width="100%">
+
+The code is layered: `lib/domain` holds the game rules, free of Flutter and Firebase, and tested; `lib/data` holds storage, with a Firebase version and an in-memory demo version; `lib/ui` holds the screens.
+
+On the interface side, every animation has a job: a radar marks the spot on the map, a gauge fills as you get closer, a shine sweeps the button once it becomes useful, and a validation is celebrated with a tick that draws itself and a burst of confetti. Screens settle in block by block, and the podium steps rise.
 
 <img src="docs/en/sections/s03.png" alt="03 Installation" width="100%">
 
