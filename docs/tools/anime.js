@@ -540,6 +540,10 @@ function rappel() {
     const l = i % 3 === 0 ? 12 : 6;
     b += `<path d="M${cx + Math.sin(a) * (r - 8)} ${cy - Math.cos(a) * (r - 8)} L${cx + Math.sin(a) * (r - 8 - l)} ${cy - Math.cos(a) * (r - 8 - l)}" stroke="${i % 3 === 0 ? C.text : C.faint}" stroke-width="${i % 3 === 0 ? 3 : 2}" stroke-linecap="round"/>`;
   }
+  for (const [n, a] of [[12, 0], [3, 90], [6, 180], [9, 270]]) {
+    const rad = (a * Math.PI) / 180;
+    b += text(cx + Math.sin(rad) * (r - 34), cy - Math.cos(rad) * (r - 34) + 6, String(n), { size: 16, color: C.text, anchor: 'middle', weight: 700 });
+  }
   // Les aiguilles tournent d'une heure à la suivante.
   const pas = 0.24;
   const angleH = ([, h, m]) => ((h % 12) + m / 60) * 30;
@@ -573,8 +577,10 @@ function rappel() {
 
   // Le jour et l'heure, à droite du cadran.
   jours.forEach(([nom, h, m], i) => {
+    // Affichée pendant que les aiguilles la montrent, masquée pendant
+    // qu'elles tournent vers la suivante.
     const a = 0.02 + i * pas;
-    const z = i < jours.length - 1 ? 0.02 + (i + 1) * pas : 0.96;
+    const z = i < jours.length - 1 ? a + pas - 0.07 : 0.96;
     b += pendant(D, a, z, text(360, 190, nom, { size: 16, color: C.faint }) + text(360, 240, `${h} h ${String(m).padStart(2, '0')}`, { size: 46, color: C.title, weight: 800 }), 0.015);
   });
 
@@ -843,13 +849,13 @@ function parcours() {
   b += etape(60, 50, t('UNE VALIDATION', 'ONE VALIDATION'), t('Du déclencheur au classement, en une transaction', 'From shutter to leaderboard, in one transaction'));
 
   const postes = [
-    [t('Téléphone', 'Phone'), [t('photo 3:4', '3:4 photo'), t('GPS : 20 m du lieu', 'GPS: 20 m away')]],
+    [t('Téléphone', 'Phone'), [t('photo en 3:4', '3:4 photo'), t('à 20 m du lieu', '20 m from the spot')]],
     ['Storage', ['photos/20720/', 'toi.jpg']],
-    ['Firestore', [t('validation 20720_toi', 'validation 20720_toi'), t('joueur : série, points', 'player: streak, points')]],
+    ['Firestore', [t('validation écrite', 'validation written'), t('joueur à jour', 'player updated')]],
     [t('Règles', 'Rules'), [t('série 3 → 4', 'streak 3 → 4'), '10 + 2 × 3 = 16 ✓']],
     [t('Classement', 'Leaderboard'), [t('+16 points', '+16 points'), t('4e sur 12', '4th of 12')]],
   ];
-  const pw = 196;
+  const pw = 206;
   const ph = 150;
   const y = 150;
   const x0 = 60;
