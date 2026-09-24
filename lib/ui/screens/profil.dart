@@ -13,6 +13,7 @@ import '../../domain/jour.dart';
 import '../../domain/modeles.dart';
 import '../../domain/score.dart';
 import '../../providers.dart';
+import '../animations.dart';
 import '../widgets.dart';
 
 /// L'état du rappel quotidien, lu dans les préférences.
@@ -32,17 +33,17 @@ class EcranProfil extends ConsumerWidget {
     if (joueur == null) return const Center(child: CircularProgressIndicator());
 
     final gauche = [
-      _Identite(joueur: joueur),
+      Apparition(rang: 1, child: _Identite(joueur: joueur)),
       const SizedBox(height: 18),
-      _Chiffres(joueur: joueur),
+      Apparition(rang: 2, child: _Chiffres(joueur: joueur)),
       const SizedBox(height: 18),
-      _Decouverte(historique: historique),
+      Apparition(rang: 3, child: _Decouverte(historique: historique)),
     ];
     final droite = [
       const SizedBox(height: 8),
-      _Historique(historique: historique),
+      Apparition(rang: 4, child: _Historique(historique: historique)),
       const SizedBox(height: 26),
-      const _Reglages(),
+      const Apparition(rang: 5, child: _Reglages()),
     ];
 
     if (large) {
@@ -54,7 +55,9 @@ class EcranProfil extends ConsumerWidget {
           bas,
         ),
         children: [
-          const EnTete(titre: 'Profil', sousTitre: 'Tes chiffres et tes réglages'),
+          const Apparition(
+            child: EnTete(titre: 'Profil', sousTitre: 'Tes chiffres, tes lieux, tes réglages'),
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -73,7 +76,9 @@ class EcranProfil extends ConsumerWidget {
     return ListView(
       padding: EdgeInsets.fromLTRB(gouttiere(context), haut + 8, gouttiere(context), bas),
       children: [
-        const EnTete(titre: 'Profil', sousTitre: 'Tes chiffres et tes réglages'),
+        const Apparition(
+          child: EnTete(titre: 'Profil', sousTitre: 'Tes chiffres, tes lieux, tes réglages'),
+        ),
         ...gauche,
         const SizedBox(height: 18),
         ...droite,

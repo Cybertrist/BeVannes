@@ -16,6 +16,7 @@ import '../../data/position.dart';
 import '../../domain/geo.dart';
 import '../../domain/modeles.dart';
 import '../../providers.dart';
+import '../animations.dart';
 import '../widgets.dart';
 import 'coquille.dart';
 
@@ -230,14 +231,14 @@ class EcranBravo extends ConsumerStatefulWidget {
 }
 
 class _EcranBravoState extends ConsumerState<EcranBravo> with SingleTickerProviderStateMixin {
-  late final _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 900))..forward();
-  late final _badge = CurvedAnimation(
-    parent: _c,
-    curve: const Interval(0, 0.6, curve: Curves.easeOutBack),
-  );
+  // Une seule horloge pour toute la scène : la coche d'abord, les
+  // confettis quand le trait se termine, le texte ensuite.
+  late final _c = AnimationController(vsync: this, duration: const Duration(milliseconds: 2600))..forward();
+  late final _coche = CurvedAnimation(parent: _c, curve: const Interval(0, 0.42));
+  late final _confettis = CurvedAnimation(parent: _c, curve: const Interval(0.22, 1));
   late final _texte = CurvedAnimation(
     parent: _c,
-    curve: const Interval(0.3, 1, curve: Curves.easeOutCubic),
+    curve: const Interval(0.3, 0.62, curve: Curves.easeOutCubic),
   );
 
   @override
@@ -257,83 +258,89 @@ class _EcranBravoState extends ConsumerState<EcranBravo> with SingleTickerProvid
     final lieu = lieuParId(ref.watch(lieuxProvider), v.lieuId);
     return Scaffold(
       body: Fond(
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: EdgeInsets.symmetric(horizontal: gouttiere(context, min: 24, largeur: 440), vertical: 24),
+        child: Stack(
+          children: [
+            Positioned.fill(
               child: AnimatedBuilder(
-                animation: _c,
-                builder: (context, _) => Column(
-                  children: [
-                    Transform.scale(
-                      scale: _badge.value,
-                      child: Container(
-                        width: 104,
-                        height: 104,
-                        decoration: BoxDecoration(
-                          gradient: K.degrade,
-                          shape: BoxShape.circle,
-                          boxShadow: [BoxShadow(color: K.accent.withValues(alpha: 0.5), blurRadius: 40)],
-                        ),
-                        child: const Icon(Icons.check_rounded, color: K.surAccent, size: 58),
-                      ),
-                    ),
-                    const SizedBox(height: 28),
-                    Opacity(
-                      opacity: _texte.value,
-                      child: Transform.translate(
-                        offset: Offset(0, 14 * (1 - _texte.value)),
-                        child: Column(
-                          children: [
-                            Text('Bien joué !', style: K.display(32)),
-                            const SizedBox(height: 8),
-                            Text(
-                              lieu == null ? 'Lieu du jour validé.' : '${lieu.nom}, validé.',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(color: K.muted, fontSize: 16),
-                            ),
-                            const SizedBox(height: 28),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _Gain(valeur: v.gain, legende: 'points gagnés', icone: Icons.add_rounded),
-                                ),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: _Gain(
-                                    valeur: v.serie,
-                                    legende: v.serie > 1 ? 'jours de suite' : 'jour de suite',
-                                    icone: Icons.local_fire_department_rounded,
-                                    couleur: K.flamme,
-                                  ),
-                                ),
-                              ],
-                            ),
-                            if (v.serie > 1) ...[
-                              const SizedBox(height: 14),
-                              Text(
-                                'La série ajoute un bonus, jusqu’à +10 points par jour.',
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(color: K.faint, fontSize: 13),
-                              ),
-                            ],
-                            const SizedBox(height: 32),
-                            BoutonPrincipal(
-                              texte: 'Voir le classement',
-                              icone: Icons.emoji_events_rounded,
-                              onPressed: () => _aller(0),
-                            ),
-                            const SizedBox(height: 12),
-                            BoutonSecondaire(texte: 'Voir qui est passé', onPressed: () => _aller(1)),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                animation: _confettis,
+                builder: (_, _) => Align(
+                  alignment: const Alignment(0, -0.42),
+                  child: SizedBox.square(
+                    dimension: 1,
+                    child: OverflowBox(maxWidth: 2000, maxHeight: 2000, child: Confettis(t: _confettis.value)),
+                  ),
                 ),
               ),
             ),
-          ),
+            SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  padding: EdgeInsets.symmetric(horizontal: gouttiere(context, min: 24, largeur: 440), vertical: 24),
+                  child: AnimatedBuilder(
+                    animation: _c,
+                    builder: (context, _) => Column(
+                      children: [
+                        CocheAnimee(t: _coche.value),
+                        const SizedBox(height: 28),
+                        Opacity(
+                          opacity: _texte.value,
+                          child: Transform.translate(
+                            offset: Offset(0, 14 * (1 - _texte.value)),
+                            child: Column(
+                              children: [
+                                Text('Bravo, c’est validé.', style: K.display(32)),
+                                const SizedBox(height: 8),
+                                Text(
+                                  lieu == null
+                                      ? 'Le lieu du jour est dans la poche.'
+                                      : '${lieu.nom} est dans la poche.',
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(color: K.muted, fontSize: 16),
+                                ),
+                                const SizedBox(height: 28),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _Gain(valeur: v.gain, legende: 'points gagnés', icone: Icons.bolt_rounded),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _Gain(
+                                        valeur: v.serie,
+                                        legende: v.serie > 1 ? 'jours de suite' : 'jour de suite',
+                                        icone: Icons.local_fire_department_rounded,
+                                        couleur: K.flamme,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                if (v.serie > 1) ...[
+                                  const SizedBox(height: 14),
+                                  Text(
+                                    'Chaque jour de série ajoute 2 points, jusqu’à 10 de bonus.',
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(color: K.faint, fontSize: 13),
+                                  ),
+                                ],
+                                const SizedBox(height: 32),
+                                BoutonPrincipal(
+                                  texte: 'Voir le classement',
+                                  icone: Icons.emoji_events_rounded,
+                                  onPressed: () => _aller(0),
+                                ),
+                                const SizedBox(height: 12),
+                                BoutonSecondaire(texte: 'Voir qui est passé', onPressed: () => _aller(1)),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

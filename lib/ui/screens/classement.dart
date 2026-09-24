@@ -8,6 +8,7 @@ import '../../config/theme.dart';
 import '../../domain/modeles.dart';
 import '../../domain/score.dart';
 import '../../providers.dart';
+import '../animations.dart';
 import '../widgets.dart';
 
 class EcranClassement extends ConsumerWidget {
@@ -24,7 +25,9 @@ class EcranClassement extends ConsumerWidget {
     return ListView(
       padding: EdgeInsets.fromLTRB(gouttiere(context), haut + 8, gouttiere(context), bas),
       children: [
-        const EnTete(titre: 'Classement', sousTitre: 'Les points cumulés depuis le premier jour'),
+        const Apparition(
+          child: EnTete(titre: 'Classement', sousTitre: 'Tous les points, depuis le premier jour'),
+        ),
         switch (classement) {
           AsyncData(:final value) when value.isEmpty => const Carte(
             child: EtatVide(
@@ -66,21 +69,30 @@ class _Contenu extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (rang >= 0) ...[
-          _MonRang(rang: rang + 1, total: joueurs.length, joueur: joueurs[rang]),
+          Apparition(
+            rang: 1,
+            child: _MonRang(rang: rang + 1, total: joueurs.length, joueur: joueurs[rang]),
+          ),
           const SizedBox(height: 22),
         ],
-        _Podium(joueurs: podium, moi: moi),
+        Apparition(
+          rang: 2,
+          child: _Podium(joueurs: podium, moi: moi),
+        ),
         if (reste.isNotEmpty) ...[
           const SizedBox(height: 22),
-          Carte(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-            child: Column(
-              children: [
-                for (final (i, j) in reste.indexed) ...[
-                  if (i > 0) const Divider(color: K.border, height: 1),
-                  _Ligne(rang: i + 4, joueur: j, moi: j.uid == moi, aujourdhui: aujourdhui),
+          Apparition(
+            rang: 4,
+            child: Carte(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+              child: Column(
+                children: [
+                  for (final (i, j) in reste.indexed) ...[
+                    if (i > 0) const Divider(color: K.border, height: 1),
+                    _Ligne(rang: i + 4, joueur: j, moi: j.uid == moi, aujourdhui: aujourdhui),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ],
@@ -174,21 +186,29 @@ class _Podium extends StatelessWidget {
               style: K.number(13.5, color: K.muted, weight: FontWeight.w500),
             ),
             const SizedBox(height: 10),
-            Container(
-              height: hauteur,
-              margin: const EdgeInsets.symmetric(horizontal: 6),
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [couleur.withValues(alpha: 0.30), couleur.withValues(alpha: 0.04)],
-                ),
-                border: Border(top: BorderSide(color: couleur, width: 2)),
+            // Les marches montent l'une après l'autre, la première en dernier.
+            Rejoue(
+              duree: const Duration(milliseconds: 900),
+              delai: Duration(milliseconds: 180 + 140 * (2 - i)),
+              builder: (_, t, enfant) => ClipRect(
+                child: Align(alignment: Alignment.topCenter, heightFactor: t, child: enfant),
               ),
-              alignment: Alignment.topCenter,
-              padding: const EdgeInsets.only(top: 10),
-              child: Text('${i + 1}', style: K.number(24, color: couleur)),
+              child: Container(
+                height: hauteur,
+                margin: const EdgeInsets.symmetric(horizontal: 6),
+                decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(14)),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [couleur.withValues(alpha: 0.30), couleur.withValues(alpha: 0.04)],
+                  ),
+                  border: Border(top: BorderSide(color: couleur, width: 2)),
+                ),
+                alignment: Alignment.topCenter,
+                padding: const EdgeInsets.only(top: 10),
+                child: Text('${i + 1}', style: K.number(24, color: couleur)),
+              ),
             ),
           ],
         ),

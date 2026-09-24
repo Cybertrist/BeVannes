@@ -23,6 +23,7 @@ import '../../domain/jour.dart';
 import '../../domain/lieu.dart';
 import '../../domain/modeles.dart';
 import '../../providers.dart';
+import '../animations.dart';
 import '../widgets.dart';
 
 /// Les octets d'une photo, gardés le temps de la session.
@@ -47,11 +48,11 @@ class EcranJour extends ConsumerWidget {
       fin: modeDemo ? const VignetteDemo() : null,
     );
     final details = [
-      _CarteLieu(lieu: lieu),
+      Apparition(rang: 2, child: _CarteLieu(lieu: lieu)),
       const SizedBox(height: 14),
-      const _Action(),
+      const Apparition(rang: 3, child: _Action()),
       const SizedBox(height: 26),
-      const _Mur(),
+      const Apparition(rang: 4, child: _Mur()),
     ];
 
     if (large) {
@@ -62,11 +63,20 @@ class EcranJour extends ConsumerWidget {
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Expanded(flex: 11, child: _Carte(lieu: lieu)),
+            Expanded(
+              flex: 11,
+              child: Apparition(rang: 1, child: _Carte(lieu: lieu)),
+            ),
             const SizedBox(width: 20),
             Expanded(
               flex: 10,
-              child: ListView(padding: const EdgeInsets.only(bottom: 20), children: [entete, ...details]),
+              child: ListView(
+                padding: const EdgeInsets.only(bottom: 20),
+                children: [
+                  Apparition(child: entete),
+                  ...details,
+                ],
+              ),
             ),
           ],
         ),
@@ -76,8 +86,11 @@ class EcranJour extends ConsumerWidget {
     return ListView(
       padding: EdgeInsets.fromLTRB(gouttiere(context), haut + 8, gouttiere(context), bas),
       children: [
-        entete,
-        SizedBox(height: 250, child: _Carte(lieu: lieu)),
+        Apparition(child: entete),
+        Apparition(
+          rang: 1,
+          child: SizedBox(height: 250, child: _Carte(lieu: lieu)),
+        ),
         const SizedBox(height: 14),
         ...details,
       ],
@@ -155,7 +168,7 @@ class _CompteAReboursState extends State<_CompteARebours> {
         const Icon(Icons.schedule_rounded, size: 15, color: K.muted),
         const SizedBox(width: 5),
         Text(
-          'encore $texte',
+          'Nouveau lieu dans $texte',
           style: const TextStyle(color: K.muted, fontSize: 13, fontWeight: FontWeight.w500),
         ),
       ],
@@ -247,7 +260,7 @@ class _CarteState extends ConsumerState<_Carte> {
                 MarkerLayer(
                   markers: [
                     // Centré pile sur le lieu, au cœur de la zone de validation.
-                    Marker(point: _cible, width: 30, height: 30, child: const _Cible()),
+                    Marker(point: _cible, width: 110, height: 110, child: const Radar()),
                     if (etat is PositionConnue)
                       Marker(
                         point: LatLng(etat.latitude, etat.longitude),
@@ -301,33 +314,6 @@ const _teinteNuit = ColorFilter.matrix(<double>[
   0, 0, 0, 1, 0,
 ]);
 // dart format on
-
-/// Le lieu : un point plein cerclé, sans pointe, pour qu'il désigne
-/// exactement le centre du cercle.
-class _Cible extends StatelessWidget {
-  const _Cible();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: K.accent.withValues(alpha: 0.55), width: 2),
-      ),
-      alignment: Alignment.center,
-      child: Container(
-        width: 16,
-        height: 16,
-        decoration: BoxDecoration(
-          gradient: K.degrade,
-          shape: BoxShape.circle,
-          border: Border.all(color: K.bg, width: 2.5),
-          boxShadow: [BoxShadow(color: K.accent.withValues(alpha: 0.7), blurRadius: 12)],
-        ),
-      ),
-    );
-  }
-}
 
 class _PointJoueur extends StatelessWidget {
   const _PointJoueur();
@@ -456,8 +442,8 @@ class _ActionState extends ConsumerState<_Action> {
               contentPadding: EdgeInsets.zero,
               value: ref.watch(simulationProvider),
               onChanged: (_) => ref.read(simulationProvider.notifier).basculer(),
-              title: const Text('Me placer sur le lieu', style: TextStyle(fontWeight: FontWeight.w600)),
-              subtitle: const Text('Démo : simule la position pour essayer', style: TextStyle(color: K.muted)),
+              title: const Text('Me téléporter sur le lieu', style: TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: const Text('Réservé à la démo', style: TextStyle(color: K.muted)),
             ),
           ],
         ],
@@ -501,7 +487,8 @@ class _Ligne extends StatelessWidget {
   }
 }
 
-/// La distance au lieu, et le bouton qui s'allume une fois sur place.
+/// La distance au lieu, en jauge, et le bouton qui s'allume une fois sur
+/// place.
 class _Distance extends StatelessWidget {
   const _Distance({
     required this.distance,
@@ -517,52 +504,68 @@ class _Distance extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final surPlace = distance <= rayonValidation;
+    final bouton = BoutonPrincipal(
+      texte: surPlace ? 'Prendre la photo' : 'Photo possible à moins de ${rayonValidation.round()} m',
+      icone: surPlace ? Icons.photo_camera_rounded : Icons.lock_outline_rounded,
+      occupe: occupe,
+      onPressed: surPlace ? photographier : null,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
+            JaugeApproche(distance: distance),
+            const SizedBox(width: 18),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(surPlace ? 'TU Y ES' : 'TU ES À', style: K.etiquette),
-                  const SizedBox(height: 8),
-                  AnimatedSwitcher(
-                    duration: K.fast,
-                    child: surPlace
-                        ? Row(
-                            key: const ValueKey('ici'),
-                            children: [
-                              const Icon(Icons.verified_rounded, color: K.accent, size: 30),
-                              const SizedBox(width: 8),
-                              Text('Sur place', style: K.display(28, color: K.accent)),
-                            ],
-                          )
-                        : Text(distanceLisible(distance), key: const ValueKey('loin'), style: K.number(38)),
-                  ),
-                ],
-              ),
-            ),
-            if (!surPlace)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 2),
-                child: BoutonSecondaire(
-                  texte: 'Itinéraire',
-                  icone: Icons.directions_walk_rounded,
-                  onPressed: itineraire,
+              child: AnimatedSwitcher(
+                duration: K.medium,
+                child: Column(
+                  key: ValueKey(surPlace),
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(surPlace ? 'SUR PLACE' : 'EN ROUTE', style: K.etiquette),
+                    const SizedBox(height: 6),
+                    Text(
+                      surPlace ? 'Tu y es.' : 'Encore ${distanceLisible(distance)}',
+                      // Pas de Syne ici : ses chiffres sont mauvais.
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w700,
+                        height: 1.15,
+                        color: surPlace ? K.accent : K.text,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      surPlace ? 'Cadre le lieu et déclenche.' : 'À vol d’oiseau.',
+                      style: const TextStyle(color: K.muted, height: 1.4, fontSize: 13.5),
+                    ),
+                    if (!surPlace) ...[
+                      const SizedBox(height: 10),
+                      GestureDetector(
+                        onTap: itineraire,
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.directions_walk_rounded, color: K.accent, size: 18),
+                            SizedBox(width: 6),
+                            Text(
+                              'Itinéraire',
+                              style: TextStyle(color: K.accent, fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
+            ),
           ],
         ),
-        const SizedBox(height: 16),
-        BoutonPrincipal(
-          texte: surPlace ? 'Prendre la photo' : 'Approche-toi à moins de ${rayonValidation.round()} m',
-          icone: surPlace ? Icons.photo_camera_rounded : Icons.lock_outline_rounded,
-          occupe: occupe,
-          onPressed: surPlace ? photographier : null,
-        ),
+        const SizedBox(height: 18),
+        surPlace && !occupe ? Reflet(child: bouton) : bouton,
       ],
     );
   }
@@ -596,8 +599,8 @@ class _DejaValide extends ConsumerWidget {
                 ),
                 const SizedBox(height: 6),
                 Text(
-                  'À ${DateFormat.Hm('fr_FR').format(validation.moment)}, à ${distanceLisible(validation.distance)} du but. '
-                  'Rendez-vous demain pour le suivant.',
+                  'Photo prise à ${DateFormat.Hm('fr_FR').format(validation.moment)}, à ${distanceLisible(validation.distance)} du lieu. '
+                  'Le prochain tombe à minuit.',
                   style: const TextStyle(color: K.muted, height: 1.4),
                 ),
                 const SizedBox(height: 10),
@@ -605,7 +608,7 @@ class _DejaValide extends ConsumerWidget {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    Pastille(texte: '+${validation.gain} pts', icone: Icons.add_rounded),
+                    Pastille(texte: '+${validation.gain} points', icone: Icons.bolt_rounded),
                     if (validation.serie > 1)
                       Pastille(
                         texte: '${validation.serie} jours',
