@@ -24,13 +24,35 @@ class EcranProfil extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final joueur = ref.watch(moiProvider).value;
+    final etatJoueur = ref.watch(moiProvider);
+    final joueur = etatJoueur.value;
     final historique = ref.watch(historiqueProvider).value ?? const <Validation>[];
     final haut = MediaQuery.viewPaddingOf(context).top;
     final bas = MediaQuery.viewPaddingOf(context).bottom + 96;
     final large = estLarge(context);
 
-    if (joueur == null) return const Center(child: CircularProgressIndicator());
+    if (joueur == null) {
+      // Chargé, mais sans profil : une inscription interrompue. Plutôt qu'un
+      // chargement sans fin, une porte de sortie.
+      if (etatJoueur.hasValue) {
+        return Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: EtatVide(
+              icone: Icons.person_off_outlined,
+              titre: 'Profil introuvable',
+              texte: 'Ton compte existe, mais pas ton profil de joueur. Déconnecte-toi, puis crée un compte à nouveau.',
+              action: BoutonSecondaire(
+                texte: 'Se déconnecter',
+                icone: Icons.logout_rounded,
+                onPressed: () => ref.read(depotProvider).deconnexion(),
+              ),
+            ),
+          ),
+        );
+      }
+      return const Center(child: CircularProgressIndicator());
+    }
 
     final gauche = [
       Apparition(rang: 1, child: _Identite(joueur: joueur)),
@@ -343,11 +365,24 @@ class _Reglages extends ConsumerWidget {
   const _Reglages();
 
   Future<void> _supprimer(BuildContext context, WidgetRef ref) async {
+    final mdp = TextEditingController();
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Supprimer ton compte ?'),
-        content: const Text('Tes points, tes photos et ton historique seront effacés pour de bon.'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Tes points, tes photos et ton historique seront effacés pour de bon.'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: mdp,
+              obscureText: true,
+              autofocus: true,
+              decoration: const InputDecoration(labelText: 'Ton mot de passe, pour confirmer'),
+            ),
+          ],
+        ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
           FilledButton(
@@ -358,9 +393,11 @@ class _Reglages extends ConsumerWidget {
         ],
       ),
     );
+    final motDePasse = mdp.text;
+    mdp.dispose();
     if (ok != true) return;
     try {
-      await ref.read(depotProvider).supprimerCompte();
+      await ref.read(depotProvider).supprimerCompte(motDePasse);
     } on ErreurDepot catch (e) {
       if (context.mounted) toast(context, e.message, erreur: true);
     }

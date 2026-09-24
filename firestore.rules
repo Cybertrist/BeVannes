@@ -9,9 +9,11 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Même règle que erreurPseudo() dans lib/data/depot.dart.
+    // Même règle que erreurPseudo() dans lib/data/depot.dart. Les règles
+    // refusent les classes Unicode (\p{L}) : les lettres accentuées sont
+    // donc écrites en plages.
     function pseudoValide(p) {
-      return p is string && p.size() >= 3 && p.size() <= 20 && p.matches('^[\p{L}\p{N} ._\-]+$');
+      return p is string && p.size() >= 3 && p.size() <= 20 && p.matches('^[A-Za-z0-9À-ÖØ-öø-ÿ ._-]+$');
     }
 
     // Le numéro du jour envoyé par l'appareil (jours depuis 1970, date

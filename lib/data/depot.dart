@@ -21,8 +21,11 @@ abstract class Depot {
   Future<void> motDePasseOublie(String email);
   Future<void> deconnexion();
 
-  /// Efface le joueur, ses validations et ses photos, puis le compte.
-  Future<void> supprimerCompte();
+  /// Efface le joueur, ses validations et ses photos, puis le compte. Le
+  /// mot de passe reconnecte d'abord : le serveur refuse de supprimer un
+  /// compte dont la connexion n'est pas récente, et il vaut mieux le savoir
+  /// avant d'avoir effacé quoi que ce soit.
+  Future<void> supprimerCompte(String motDePasse);
 
   Stream<Joueur?> joueur(String uid);
   Future<void> changerPseudo(String uid, String pseudo);
@@ -52,13 +55,14 @@ abstract class Depot {
   Future<List<int>?> photo(String chemin);
 }
 
-/// Vérifie un pseudo : 3 à 20 caractères, lettres, chiffres, espace, point,
-/// tiret et tiret bas. Même règle que firestore.rules.
+/// Vérifie un pseudo : 3 à 20 caractères, lettres (accents compris),
+/// chiffres, espace, point, tiret et tiret bas. Même règle que
+/// firestore.rules, qui n'accepte pas les classes Unicode.
 String? erreurPseudo(String pseudo) {
   final p = pseudo.trim();
   if (p.length < 3) return 'Au moins 3 caractères';
   if (p.length > 20) return '20 caractères au plus';
-  if (!RegExp(r'^[\p{L}\p{N} ._\-]+$', unicode: true).hasMatch(p)) {
+  if (!RegExp(r'^[A-Za-z0-9À-ÖØ-öø-ÿ ._\-]+$').hasMatch(p)) {
     return 'Lettres, chiffres, espaces et . _ - seulement';
   }
   return null;

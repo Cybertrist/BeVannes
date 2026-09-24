@@ -1,7 +1,7 @@
 name: bevannes
 description: "BeVannes, un lieu de Vannes par jour, validé par GPS et par une photo."
 publish_to: 'none'
-version: 2.0.1+2
+version: 2.1.0+3
 
 environment:
   sdk: ^3.13.4

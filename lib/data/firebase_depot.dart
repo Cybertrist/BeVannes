@@ -55,9 +55,10 @@ class FirebaseDepot implements Depot {
   Future<void> deconnexion() => _auth.signOut();
 
   @override
-  Future<void> supprimerCompte() => _traduire(() async {
+  Future<void> supprimerCompte(String motDePasse) => _traduire(() async {
     final user = _auth.currentUser;
     if (user == null) return;
+    await user.reauthenticateWithCredential(EmailAuthProvider.credential(email: user.email!, password: motDePasse));
     final mes = await _validations.where('uid', isEqualTo: user.uid).get();
     for (final v in mes.docs) {
       final chemin = v.data()['photo'] as String?;
@@ -90,19 +91,19 @@ class FirebaseDepot implements Depot {
       .map((q) => [for (final d in q.docs) _joueurDepuis(d.id, d.data())]);
 
   @override
+  // Filtre simple et tri ici : aucun index composé à créer dans la console.
   Stream<List<Validation>> validationsDuJour(int jour) => _validations
       .where('jour', isEqualTo: jour)
-      .orderBy('moment')
       .snapshots()
-      .map((q) => [for (final d in q.docs) _validationDepuis(d.data())]);
+      .map((q) => [for (final d in q.docs) _validationDepuis(d.data())]..sort((a, b) => a.moment.compareTo(b.moment)));
 
   @override
+  // Un joueur n'a qu'une validation par jour : la liste reste courte, le
+  // tri se fait ici plutôt que par un index composé.
   Stream<List<Validation>> historique(String uid) => _validations
       .where('uid', isEqualTo: uid)
-      .orderBy('jour', descending: true)
-      .limit(60)
       .snapshots()
-      .map((q) => [for (final d in q.docs) _validationDepuis(d.data())]);
+      .map((q) => [for (final d in q.docs) _validationDepuis(d.data())]..sort((a, b) => b.jour.compareTo(a.jour)));
 
   @override
   Future<Validation> valider({
@@ -208,6 +209,7 @@ class FirebaseDepot implements Depot {
         'too-many-requests' => 'Trop de tentatives, réessaie dans quelques minutes.',
         'network-request-failed' => 'Pas de connexion à Internet.',
         'requires-recent-login' => 'Reconnecte-toi, puis recommence.',
+        'missing-password' => 'Indique ton mot de passe.',
         _ => 'Erreur de connexion (${e.code}).',
       });
     } on FirebaseException catch (e) {

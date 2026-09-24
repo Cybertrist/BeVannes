@@ -186,7 +186,7 @@ class DemoDepot implements Depot {
   }
 
   @override
-  Future<void> supprimerCompte() async {
+  Future<void> supprimerCompte(String motDePasse) async {
     await _latence();
     _session = null;
     _notifier();
