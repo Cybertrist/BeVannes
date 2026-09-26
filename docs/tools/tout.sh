@@ -8,3 +8,6 @@ for LG in fr en; do
   LANGUE=$LG bash "$D/installer.sh"
   LANGUE=$LG node "$D/anime.js"
 done
+
+# L'aperçu social, à déposer à la main dans les réglages du dépôt.
+bash "$D/social.sh"
