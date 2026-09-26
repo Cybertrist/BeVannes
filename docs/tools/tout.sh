@@ -5,6 +5,7 @@ echo "pastilles.sh"; bash "$D/pastilles.sh"
 for LG in fr en; do
   echo; echo "=== $LG ==="
   LANGUE=$LG bash "$D/figures.sh"
+  LANGUE=$LG bash "$D/sommaire.sh"
   LANGUE=$LG bash "$D/installer.sh"
   LANGUE=$LG node "$D/anime.js"
 done

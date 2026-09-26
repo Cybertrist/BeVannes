@@ -23,6 +23,18 @@ The starting idea: we walk past the same streets every day without ever stopping
 
 <img src="docs/en/schemas/vitrine.svg" alt="Animation: a phone scrolls through six real BeVannes screens: sign in, the spot of the day with its map, arriving on site with the gauge full, the validation with its tick and confetti, the leaderboard with its podium, and the profile." width="100%">
 
+<img src="docs/en/sections/s00.png" alt="00 Contents" width="100%">
+
+<p align="center">
+<a href="#how-it-works"><img src="docs/en/sommaire/01.png" alt="01 How it works" width="31%"></a>
+<a href="#under-the-hood"><img src="docs/en/sommaire/02.png" alt="02 Under the hood" width="31%"></a>
+<a href="#installation"><img src="docs/en/sommaire/03.png" alt="03 Installation" width="31%"></a>
+<br>
+<a href="#places"><img src="docs/en/sommaire/04.png" alt="04 Adding places" width="31%"></a>
+<a href="#limits"><img src="docs/en/sommaire/05.png" alt="05 Limits" width="31%"></a>
+</p>
+
+<a id="how-it-works"></a>
 <img src="docs/en/sections/s01.png" alt="01 How it works" width="100%">
 
 A game plays out in four beats.
@@ -45,6 +57,7 @@ A game plays out in four beats.
 
 
 
+<a id="under-the-hood"></a>
 <img src="docs/en/sections/s02.png" alt="02 Under the hood" width="100%">
 
 A Flutter app for Android, with Firebase behind it: Authentication for accounts, Firestore for players, validations and photos. The photos fit easily, as 3:4 at 900 × 1200 pixels, and Cloud Storage is no longer offered on Firebase's free plan: the whole game runs without paying anything. The map comes from OpenStreetMap, no API key needed.
@@ -73,6 +86,7 @@ The code is layered: `lib/domain` holds the game rules, free of Flutter and Fire
 
 On the interface side, every animation has a job: a radar marks the spot on the map, a gauge fills as you get closer, a shine sweeps the button once it becomes useful, and a validation is celebrated with a tick that draws itself and a burst of confetti. Screens settle in block by block, and the podium steps rise.
 
+<a id="installation"></a>
 <img src="docs/en/sections/s03.png" alt="03 Installation" width="100%">
 
 Two apps, which install side by side without getting in each other's way.
@@ -125,6 +139,7 @@ flutter build apk --release --dart-define-from-file=firebase.env.json
 
 > Client-side Firebase API keys are not secrets, they can be read from any APK. What protects the data are the **rules** in `firestore.rules`: a player only writes their own points, recomputed by the server, and only sees a day's photos after validating that day themselves.
 
+<a id="places"></a>
 <img src="docs/en/sections/s04.png" alt="04 Adding places" width="100%">
 
 Nineteen places today, from the cathedral to the Conleau headland, each coming up once per cycle.
@@ -148,6 +163,7 @@ Take the coordinates from OpenStreetMap, not by eye: with a hundred metre radius
 
 The order of the file feeds the draw: adding a place reshuffles the current cycle. Every player therefore needs the same app version to see the same spot.
 
+<a id="limits"></a>
 <img src="docs/en/sections/s05.png" alt="05 Limits" width="100%">
 
 The playing field is Vannes. Anywhere else, there is nothing to discover.

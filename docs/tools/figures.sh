@@ -34,6 +34,7 @@ rep bevannes "$A" \
 "$(t 'Installation' 'Installation')" \
 "$(t 'Ajouter des lieux' 'Adding places')" \
 "$(t 'Limites' 'Limits')"
+sec bevannes "$A" 00 "$(t 'Sommaire' 'Contents')"
 
 # ----------------------------------------------------- ce qui tient le jeu
 grid bv-fonctions "$A" 3 \

@@ -23,6 +23,18 @@ L'idée de départ : on passe devant les mêmes rues tous les jours sans jamais 
 
 <img src="docs/schemas/vitrine.svg" alt="Animation : un téléphone fait défiler six vrais écrans de BeVannes : la connexion, le lieu du jour avec sa carte, l’arrivée sur place avec la jauge pleine, la validation avec sa coche et ses confettis, le classement avec son podium, et le profil." width="100%">
 
+<img src="docs/sections/s00.png" alt="00 Sommaire" width="100%">
+
+<p align="center">
+<a href="#fonctionnement"><img src="docs/sommaire/01.png" alt="01 Fonctionnement" width="31%"></a>
+<a href="#sous-le-capot"><img src="docs/sommaire/02.png" alt="02 Sous le capot" width="31%"></a>
+<a href="#installation"><img src="docs/sommaire/03.png" alt="03 Installation" width="31%"></a>
+<br>
+<a href="#lieux"><img src="docs/sommaire/04.png" alt="04 Ajouter des lieux" width="31%"></a>
+<a href="#limites"><img src="docs/sommaire/05.png" alt="05 Limites" width="31%"></a>
+</p>
+
+<a id="fonctionnement"></a>
 <img src="docs/sections/s01.png" alt="01 Fonctionnement" width="100%">
 
 Une partie tient en quatre temps.
@@ -44,6 +56,7 @@ Une partie tient en quatre temps.
 <img src="docs/schemas/rappel.svg" alt="Animation : les aiguilles d'une horloge sautent d'une heure à l'autre, mercredi 17 h 54, jeudi 14 h 43, vendredi 13 h 18, samedi 17 h 51. À chaque heure, trois téléphones vibrent en même temps et la même notification descend : « C'est l'heure ! ». Le calcul se fait sur chaque téléphone, sans serveur." width="100%">
 
 
+<a id="sous-le-capot"></a>
 <img src="docs/sections/s02.png" alt="02 Sous le capot" width="100%">
 
 Une application Flutter pour Android, avec Firebase derrière : Authentication pour les comptes, Firestore pour les joueurs, les validations et les photos. Les photos y tiennent sans peine, en 3:4 de 900 × 1200 pixels, et Cloud Storage n'est plus offert sur le forfait gratuit de Firebase : tout le jeu tourne sans rien payer. La carte vient d'OpenStreetMap, sans clé d'API.
@@ -72,6 +85,7 @@ Le code est rangé en couches : `lib/domain` pour les règles du jeu, sans Flutt
 
 Côté interface, chaque animation a un rôle : un radar marque le lieu sur la carte, une jauge se remplit en approchant, un reflet passe sur le bouton quand il devient utile, et la validation se fête avec une coche qui se dessine et une gerbe de confettis. Les écrans s'installent bloc par bloc, et les marches du podium montent.
 
+<a id="installation"></a>
 <img src="docs/sections/s03.png" alt="03 Installation" width="100%">
 
 Deux applications, qui s'installent côte à côte sans se gêner.
@@ -124,6 +138,7 @@ flutter build apk --release --dart-define-from-file=firebase.env.json
 
 > Les clés d'API Firebase côté client ne sont pas des secrets, elles se lisent dans tout APK. Ce qui protège les données, ce sont les **règles** de `firestore.rules` : un joueur n'écrit que ses propres points, recalculés par le serveur, et ne voit les photos d'un jour qu'après avoir validé ce jour-là.
 
+<a id="lieux"></a>
 <img src="docs/sections/s04.png" alt="04 Ajouter des lieux" width="100%">
 
 Dix-neuf lieux aujourd'hui, de la cathédrale à la pointe de Conleau, qui passent chacun une fois par cycle.
@@ -147,6 +162,7 @@ Les coordonnées se prennent sur OpenStreetMap, pas à l'œil : à cent mètres 
 
 L'ordre du fichier entre dans le tirage : ajouter un lieu rebat le cycle en cours. Tous les joueurs doivent donc avoir la même version de l'application pour voir le même lieu.
 
+<a id="limites"></a>
 <img src="docs/sections/s05.png" alt="05 Limites" width="100%">
 
 Le terrain de jeu est Vannes. Ailleurs, il n'y a rien à découvrir.
