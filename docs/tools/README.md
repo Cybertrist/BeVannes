@@ -10,7 +10,7 @@ figure se corrige donc en modifiant une ligne de script.
     bash docs/tools/tout.sh
 
 Cela rend les deux langues. Les scripts écrivent dans `docs/tools/png/`,
-`sec/`, `grid/`, `tree/` et `langues/`, suffixés `-en` pour l'anglais, qui
+`sec/`, `som/`, `grid/`, `tree/` et `langues/`, suffixés `-en` pour l'anglais, qui
 ne sont pas versionnés. `installer.sh` recopie ensuite les fichiers retenus
 dans `docs/` et `docs/en/`.
 
@@ -27,13 +27,18 @@ ce qui rend impossible d'en corriger une en oubliant l'autre.
 
 ## Ce que fait chaque script
 
-- `figures.sh` : la bannière, les cinq bandeaux de section et la grille
-  des trois pièces.
-- `anime.js` : les dix schémas animés, en SVG que GitHub joue dans une
+- `figures.sh` : la bannière, les seize bandeaux de section, du 00 Sommaire
+  au 15, et la grille des trois pièces.
+- `sommaire.sh` : les quinze tuiles du sommaire, une image par tuile pour
+  que chacune mène à sa section.
+- `anime.js` : les dix-huit schémas, en SVG que GitHub joue dans une
   balise `<img>`. `node docs/tools/anime.js`, et `LANGUE=en` pour
   l'anglais. La vitrine embarque les six captures de `vitrine/`, de
   vrais écrans de la démo en JPEG 480 px ; la carte des lieux lit
-  `assets/lieux.json` et refait le tirage de `lib/domain/jour.dart`.
+  `assets/lieux.json` et refait le tirage de `lib/domain/jour.dart`. La planche `ecrans.svg`
+  reprend les mêmes captures, fixes ; les chiffres de la stack, des couches
+  et des tests sont relevés dans `pubspec.yaml`, `lib/` et `test/`, et sont
+  à mettre à jour avec eux.
 - `cartes.sh` : le gabarit des bannières 1280x320.
 - `bandeaux.sh` : le gabarit des bandeaux de section numérotés.
 - `grille.sh` : le gabarit des grilles à deux ou trois colonnes.
@@ -43,6 +48,8 @@ ce qui rend impossible d'en corriger une en oubliant l'autre.
 - `langue.sh` : la bascule `LANGUE` et la fonction `t`.
 - `installer.sh` : repose les images rendues dans `docs/` ou `docs/en/`.
 - `telecharger.sh` : le bouton de téléchargement, lien vers le dernier APK des Releases.
+- `social.sh` : l'aperçu social 1280x640, à déposer à la main dans les
+  réglages du dépôt.
 - `tout.sh` : enchaîne tout ce qui précède, dans les deux langues.
 
 ## Ce dont ils dépendent

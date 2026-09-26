@@ -29,11 +29,21 @@ ban bevannes "$A" "#A7F3E6" "#04130F" \
 
 # ------------------------------------------------ les bandeaux de section
 rep bevannes "$A" \
-"$(t 'Fonctionnement' 'How it works')" \
-"$(t 'Sous le capot' 'Under the hood')" \
-"$(t 'Installation' 'Installation')" \
+"$(t 'Fonctionnalités' 'Features')" \
+"$(t 'Les écrans' 'The screens')" \
+"$(t 'Installer' 'Install')" \
+"$(t 'Le lieu du jour' "Today's spot")" \
+"$(t 'Sur place' 'On site')" \
+"$(t 'La photo' 'The photo')" \
+"$(t 'Le mur du jour' 'The daily wall')" \
+"$(t 'Points et séries' 'Points and streaks')" \
+"$(t 'Le rappel' 'The reminder')" \
+"$(t 'Les règles Firestore' 'The Firestore rules')" \
+"$(t 'Confidentialité et limites' 'Privacy and limits')" \
+"$(t 'Architecture' 'Architecture')" \
 "$(t 'Ajouter des lieux' 'Adding places')" \
-"$(t 'Limites' 'Limits')"
+"$(t 'Les tests' 'The tests')" \
+"$(t 'Versions et licence' 'Versions and licence')"
 sec bevannes "$A" 00 "$(t 'Sommaire' 'Contents')"
 
 # ----------------------------------------------------- ce qui tient le jeu

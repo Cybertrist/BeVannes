@@ -376,15 +376,15 @@ function cadrage() {
     0.9,
     `<g clip-path="url(#finale)"><g transform="translate(${fx - (x + bande) * (fw / cw)} ${fy - y * (fh / h)}) scale(${fw / cw} ${fh / h})">${scene}</g></g><rect x="${fx}" y="${fy}" width="${fw}" height="${fh}" rx="18" fill="none" stroke="${C.accent}" stroke-width="2"/>`,
   );
-  b += pendant(D, 0.5, 0.9, text(fx + fw + 36, fy + 110, '3:4', { size: 44, color: C.title, weight: 800 }) + text(fx + fw + 36, fy + 146, '1200 × 1600 · JPEG', { size: 14, color: C.text, font: MONO }) + text(fx + fw + 36, fy + 176, t('Recadrée sur le téléphone,', 'Cropped on the phone,'), { size: 14, color: C.faint }) + text(fx + fw + 36, fy + 196, t('avant l’envoi.', 'before upload.'), { size: 14, color: C.faint }));
+  b += pendant(D, 0.5, 0.9, text(fx + fw + 36, fy + 110, '3:4', { size: 44, color: C.title, weight: 800 }) + text(fx + fw + 36, fy + 146, '900 × 1200 · JPEG', { size: 14, color: C.text, font: MONO }) + text(fx + fw + 36, fy + 176, t('Recadrée sur le téléphone,', 'Cropped on the phone,'), { size: 14, color: C.faint }) + text(fx + fw + 36, fy + 196, t('avant l’envoi.', 'before upload.'), { size: 14, color: C.faint }));
 
   return svg(
     W,
     H,
     b,
     t(
-      "Animation : une photo prise en 4:3 montre une porte de ville sous le soleil. Deux bandes sombres tombent de chaque côté et ne laissent qu'un cadre 3:4 en portrait, qui part ensuite vers la droite : 3:4, 1200 × 1600 en JPEG, recadrée sur le téléphone avant l'envoi.",
-      'Animation: a photo taken in 4:3 shows a city gate in the sun. Two dark bands drop on either side, leaving only a 3:4 portrait frame, which then moves to the right: 3:4, 1200 × 1600 JPEG, cropped on the phone before upload.',
+      "Animation : une photo prise en 4:3 montre une porte de ville sous le soleil. Deux bandes sombres tombent de chaque côté et ne laissent qu'un cadre 3:4 en portrait, qui part ensuite vers la droite : 3:4, 900 × 1200 en JPEG, recadrée sur le téléphone avant l'envoi.",
+      'Animation: a photo taken in 4:3 shows a city gate in the sun. Two dark bands drop on either side, leaving only a 3:4 portrait frame, which then moves to the right: 3:4, 900 × 1200 JPEG, cropped on the phone before upload.',
     ),
   );
 }
@@ -948,10 +948,397 @@ function triche() {
   );
 }
 
+// --- 11. Les fonctionnalités ----------------------------------------------
+
+/** Un petit pictogramme en traits, dessiné autour de (x, y). */
+function picto(nom, x, y, D, a) {
+  const s = `stroke="${C.accent}" stroke-width="2.2" fill="none" stroke-linecap="round" stroke-linejoin="round"`;
+  const g = (c) => `<g transform="translate(${x} ${y})">${c}</g>`;
+  switch (nom) {
+    case 'lieu':
+      return g(`<path d="M0 13 C-8 4 -12 -2 -12 -7 A12 12 0 0 1 12 -7 C12 -2 8 4 0 13 Z" ${s}/><circle cx="0" cy="-7" r="4" fill="${C.accent}"/>`);
+    case 'zone':
+      return g(`<circle r="4" fill="${C.accent}"/><circle r="13" ${s}/><circle r="13" ${s}>${anim(D, 'r', [[0, 4], [a, 4], [a + 0.08, 17], [a + 0.081, 4]])}${anim(D, 'stroke-opacity', [[0, 0], [a, 1], [a + 0.08, 0]])}</circle>`);
+    case 'photo':
+      return g(`<rect x="-10" y="-13" width="20" height="26" rx="3" ${s}/><circle cy="-1" r="5" ${s}/>`);
+    case 'mur':
+      return g(`<rect x="-13" y="-13" width="11" height="11" rx="2" ${s}/><rect x="2" y="-13" width="11" height="11" rx="2" ${s}/><rect x="-13" y="2" width="11" height="11" rx="2" ${s}/><rect x="2" y="2" width="11" height="11" rx="2" fill="${C.accent}" stroke="${C.accent}" stroke-width="2.2"/>`);
+    case 'serie':
+      return g(`<path d="M0 13 C-9 13 -12 6 -10 0 C-8 -5 -4 -6 -3 -13 C3 -9 5 -5 4 -1 C6 -3 7 -5 7 -7 C11 -2 11 5 8 9 C6 12 3 13 0 13 Z" stroke="${C.flame}" stroke-width="2.2" fill="none" stroke-linejoin="round"/>`);
+    case 'podium':
+      return g(`<rect x="-14" y="-2" width="9" height="14" rx="1.5" ${s}/><rect x="-4.5" y="-12" width="9" height="24" rx="1.5" fill="${C.accent}" stroke="${C.accent}" stroke-width="2.2"/><rect x="5" y="3" width="9" height="9" rx="1.5" ${s}/>`);
+    case 'rappel':
+      return g(`<circle r="13" ${s}/><path d="M0 -7 V0 L5 4" ${s}/>`);
+    case 'note':
+      return g(`<rect x="-11" y="-13" width="22" height="26" rx="3" ${s}/><path d="M-6 -6 H6 M-6 0 H6 M-6 6 H2" ${s}/>`);
+    case 'demo':
+      return g(`<path d="M-4 -13 H4 M-3 -13 V-3 L-11 10 A2 2 0 0 0 -9 13 H9 A2 2 0 0 0 11 10 L3 -3 V-13" ${s}/><path d="M-7 5 H7" ${s}/>`);
+  }
+  return '';
+}
+
+function fonctionnalites() {
+  const D = 18;
+  const W = 1280;
+  const H = 640;
+  const cartes = [
+    ['lieu', t('Un lieu par jour', 'One spot a day'), t('Le même pour tous, tiré par', 'The same for everyone, drawn by'), t('chaque téléphone, sans serveur.', 'each phone, with no server.')],
+    ['zone', t('Cent mètres, pas plus', 'A hundred metres, no more'), t('Le GPS confirme la présence ;', 'GPS confirms you are there;'), t('une position fictive est refusée.', 'a mock location is refused.')],
+    ['photo', t('La photo en 3:4', 'The photo in 3:4'), t('Recadrée et allégée sur le', 'Cropped and slimmed down on the'), t('téléphone, 900 × 1200 en JPEG.', 'phone, 900 × 1200 as JPEG.')],
+    ['mur', t('Le mur du jour', 'The daily wall'), t('Les photos des autres se', 'Other players’ photos unlock'), t('dévoilent après la sienne.', 'once yours is posted.')],
+    ['serie', t('Points et séries', 'Points and streaks'), t('10 points par lieu, +2 par jour', '10 points a spot, +2 per day'), t('de série, jusqu’à +10.', 'of streak, up to +10.')],
+    ['podium', t('Le classement', 'The leaderboard'), t('Les cent meilleurs, le podium,', 'The top hundred, the podium,'), t('et la série de chacun.', 'and everyone’s streak.')],
+    ['rappel', t('Le rappel', 'The reminder'), t('Une heure différente chaque jour,', 'A different time every day,'), t('la même pour tout le monde.', 'the same for everybody.')],
+    ['note', t('La note du lieu', 'The note on the place'), t('Un peu d’histoire sur chacun', 'A bit of history on each'), t('des dix-neuf lieux de Vannes.', 'of the nineteen spots in Vannes.')],
+    ['demo', t('La démo', 'The demo'), t('Une communauté fictive, et un', 'A made-up community, and a'), t('interrupteur pour se téléporter.', 'switch to teleport yourself.')],
+  ];
+  const cw = 372;
+  const ch = 150;
+  const gx = 22;
+  const gy = 22;
+  const x0 = (W - 3 * cw - 2 * gx) / 2;
+  const y0 = 100;
+  let b = etape(x0, 46, 'BEVANNES', t('Neuf idées, un seul jeu', 'Nine ideas, one game'));
+  const pas = 0.9 / cartes.length;
+  cartes.forEach(([p, titre, l1, l2], i) => {
+    const x = x0 + (i % 3) * (cw + gx);
+    const y = y0 + Math.floor(i / 3) * (ch + gy);
+    const a = 0.03 + i * pas;
+    b += `<rect x="${x}" y="${y}" width="${cw}" height="${ch}" rx="18" fill="${C.card}" stroke="${C.accent}" stroke-width="1.6">${anim(D, 'stroke-opacity', [[0, 0.14], [a, 0.14], [a + 0.015, 0.9], [a + pas, 0.9], [a + pas + 0.015, 0.14]])}</rect>`;
+    b += `<circle cx="${x + 48}" cy="${y + 50}" r="40" fill="url(#halo)" opacity="0">${anim(D, 'opacity', [[0, 0], [a, 0], [a + 0.015, 1], [a + pas, 1], [a + pas + 0.015, 0]])}</circle>`;
+    b += `<rect x="${x + 22}" y="${y + 24}" width="52" height="52" rx="14" fill="${C.soft}" stroke="${C.accent}" stroke-opacity=".3"/>`;
+    b += picto(p, x + 48, y + 50, D, a);
+    b += text(x + 94, y + 44, `0${i + 1}`, { size: 12, color: C.faint, font: MONO, weight: 700 });
+    b += text(x + 94, y + 68, titre, { size: 19, color: C.title, weight: 700 });
+    b += text(x + 22, y + 110, l1, { size: 15, color: C.text });
+    b += text(x + 22, y + 132, l2, { size: 15, color: C.text });
+  });
+  return svg(W, H, b, t(
+    "Les fonctionnalités de BeVannes, en neuf cartes qui s'allument l'une après l'autre. Un lieu par jour, le même pour tous, tiré par chaque téléphone. Cent mètres, pas plus : le GPS confirme, une position fictive est refusée. La photo en 3:4, recadrée et allégée sur le téléphone. Le mur du jour, dont les photos se dévoilent après la sienne. Points et séries : 10 points, +2 par jour de série jusqu'à +10. Le classement des cent meilleurs. Le rappel, à une heure différente chaque jour. La note historique de chacun des dix-neuf lieux. La démo, avec sa communauté fictive et la téléportation.",
+    'The features of BeVannes, in nine cards that light up one after the other. One spot a day, the same for everyone, drawn by each phone. A hundred metres, no more: GPS confirms, a mock location is refused. The photo in 3:4, cropped and slimmed down on the phone. The daily wall, whose photos unlock once yours is posted. Points and streaks: 10 points, +2 per day of streak up to +10. The top hundred leaderboard. The reminder, at a different time every day. The history note of each of the nineteen spots. The demo, with its made-up community and teleporting.',
+  ));
+}
+
+// --- 12. La planche des écrans --------------------------------------------
+
+function ecrans() {
+  const W = 1280;
+  const noms = [
+    [t('Connexion', 'Sign in'), t('un compte, un pseudo', 'one account, one nickname')],
+    [t('Le lieu du jour', "Today's spot"), t('la carte et sa zone', 'the map and its zone')],
+    [t('Sur place', 'On site'), t('la jauge est pleine', 'the gauge is full')],
+    [t('Validé', 'Validated'), t('points et série', 'points and streak')],
+    [t('Le classement', 'Leaderboard'), t('le podium, sa place', 'the podium, your rank')],
+    [t('Le profil', 'The profile'), t('chiffres et lieux', 'numbers and spots')],
+  ];
+  const ew = 184;
+  const eh = Math.round((ew * 1067) / 480);
+  const ecart = (W - 80 - 6 * ew) / 5;
+  const y = 40;
+  const H = y + eh + 96;
+  let b = '';
+  noms.forEach(([titre, sous], i) => {
+    const x = 40 + i * (ew + ecart);
+    const donnees = fs.readFileSync(path.join(__dirname, 'vitrine', `0${i + 1}.jpg`)).toString('base64');
+    b += `<clipPath id="e${i}"><rect x="${x}" y="${y}" width="${ew}" height="${eh}" rx="20"/></clipPath>`;
+    b += `<image x="${x}" y="${y}" width="${ew}" height="${eh}" clip-path="url(#e${i})" preserveAspectRatio="xMidYMid slice" href="data:image/jpeg;base64,${donnees}"/>`;
+    b += `<rect x="${x}" y="${y}" width="${ew}" height="${eh}" rx="20" fill="none" stroke="${C.line}" stroke-width="2"/>`;
+    b += text(x, y + eh + 36, `0${i + 1}`, { size: 13, color: C.accent, font: MONO, weight: 700 });
+    b += text(x + 30, y + eh + 36, titre, { size: 16, color: C.title, weight: 700 });
+    b += text(x, y + eh + 62, sous, { size: 14, color: C.text });
+  });
+  return svg(W, H, b, t(
+    "Six vrais écrans de BeVannes, côte à côte. La connexion, avec un compte et un pseudo. Le lieu du jour, avec la carte et sa zone de cent mètres. L'arrivée sur place, jauge pleine. La validation, avec les points et la série. Le classement, avec le podium. Le profil, avec ses chiffres et les lieux découverts.",
+    'Six real BeVannes screens, side by side. Sign in, with an account and a nickname. The spot of the day, with the map and its hundred metre zone. Arriving on site, gauge full. The validation, with points and streak. The leaderboard, with the podium. The profile, with its numbers and the spots found.',
+  ));
+}
+
+// --- 13. Ce qui sort du téléphone -----------------------------------------
+
+function confidentialite() {
+  const D = 14;
+  const W = 1280;
+  const H = 560;
+  let b = '';
+  b += etape(60, 46, t('CONFIDENTIALITÉ', 'PRIVACY'), t('Ce qui reste sur le téléphone, et ce qui en sort', 'What stays on the phone, and what leaves it'));
+  // Le téléphone, au centre.
+  const px = 540;
+  const py = 120;
+  const pw = 160;
+  b += `<ellipse cx="${px + pw / 2}" cy="${py + 170}" rx="150" ry="200" fill="url(#halo)" opacity=".45"/>`;
+  b += telephone(px, py, pw, 330, text(pw / 2, 150, 'BeVannes', { size: 17, color: C.title, weight: 800, anchor: 'middle' }) + `<circle cx="${pw / 2}" cy="200" r="7" fill="url(#degrade)"/><circle cx="${pw / 2}" cy="200" r="22" fill="none" stroke="${C.accent}" stroke-opacity=".5"/>`);
+  // À gauche, ce qui ne part jamais.
+  const gauche = [
+    [t('La position exacte', 'The exact position'), t('seule la distance arrondie part', 'only the rounded distance leaves')],
+    [t('La photo d’origine', 'The original photo'), t('seule la version 3:4 est envoyée', 'only the 3:4 version is sent')],
+    [t('Le tirage du lieu', 'The draw of the spot'), t('calculé ici, jamais stocké', 'computed here, never stored')],
+    [t('L’heure du rappel', 'The reminder time'), t('notification locale, sans serveur', 'local notification, no server')],
+  ];
+  b += text(60, 124, t('RESTE ICI', 'STAYS HERE'), { size: 12, color: C.faint, font: MONO, weight: 700, extra: 'letter-spacing="1.5"' });
+  gauche.forEach(([a, c], i) => {
+    const y = 144 + i * 84;
+    const debut = 0.04 + i * 0.05;
+    b += pendant(D, debut, 0.95, `<rect x="60" y="${y}" width="420" height="68" rx="14" fill="${C.card}" stroke="${C.line}"/>` +
+      `<g fill="none" stroke="${C.accent}" stroke-width="2" stroke-linecap="round"><path d="M86 ${y + 32} v-6 a6 6 0 0 1 12 0 v6"/><rect x="81" y="${y + 32}" width="22" height="16" rx="4"/></g><circle cx="92" cy="${y + 40}" r="2" fill="${C.accent}"/>` +
+      text(124, y + 29, a, { size: 16, color: C.title, weight: 700 }) + text(124, y + 52, c, { size: 14, color: C.text }));
+  });
+  // À droite, ce qui part vers Firebase, et qui peut le lire.
+  const droite = [
+    ['Authentication', t('e-mail et mot de passe', 'e-mail and password'), t('personne d’autre', 'nobody else')],
+    ['joueurs/{uid}', t('pseudo, points, série', 'nickname, points, streak'), t('joueurs connectés', 'signed-in players')],
+    ['validations/{jour}_{uid}', t('lieu, distance, heure', 'spot, distance, time'), t('joueurs connectés', 'signed-in players')],
+    ['photos/{jour}_{uid}', t('le JPEG 900 × 1200', 'the 900 × 1200 JPEG'), t('ceux qui ont validé ce jour', 'those who validated that day')],
+  ];
+  const dx = 780;
+  b += text(dx, 124, t('PART VERS FIREBASE', 'GOES TO FIREBASE'), { size: 12, color: C.faint, font: MONO, weight: 700, extra: 'letter-spacing="1.5"' });
+  droite.forEach(([col, quoi, qui], i) => {
+    const y = 144 + i * 84;
+    const a = 0.3 + i * 0.12;
+    // Un paquet quitte le téléphone et rejoint sa collection.
+    b += `<circle r="5" fill="${C.pale}" opacity="0">${appear(D, a, a + 0.06, 0.01)}${move(D, [[0, `${px + pw} ${py + 200}`], [a, `${px + pw} ${py + 200}`], [a + 0.06, `${dx} ${y + 34}`], [1, `${dx} ${y + 34}`]])}</circle>`;
+    b += pendant(D, a + 0.05, 0.95, `<rect x="${dx}" y="${y}" width="440" height="68" rx="14" fill="${C.card}" stroke="${C.accent}" stroke-opacity=".45"/>` +
+      text(dx + 20, y + 28, col, { size: 14, color: C.accent, font: MONO, weight: 700 }) +
+      text(dx + 20, y + 52, quoi, { size: 14, color: C.title }) +
+      text(dx + 420, y + 52, qui, { size: 13, color: C.text, anchor: 'end' }));
+  });
+  b += pendant(D, 0.84, 0.95, text(60, 520, t('Supprimer son compte efface ses photos, ses validations et son joueur, puis le compte lui-même.', 'Deleting your account erases your photos, your validations and your player, then the account itself.'), { size: 15, color: C.title }));
+  return svg(W, H, b, t(
+    "Animation : au centre, le téléphone. À gauche, ce qui n'en sort jamais : la position exacte, dont seule la distance arrondie part ; la photo d'origine, dont seule la version 3:4 est envoyée ; le tirage du lieu, calculé sur place ; l'heure du rappel, une notification locale. À droite, quatre paquets partent vers Firebase : l'e-mail et le mot de passe dans Authentication, lus par personne d'autre ; le pseudo, les points et la série dans joueurs, lus par les joueurs connectés ; le lieu, la distance et l'heure dans validations ; le JPEG dans photos, lisible seulement par ceux qui ont validé ce jour-là. Supprimer son compte efface tout.",
+    'Animation: in the middle, the phone. On the left, what never leaves it: the exact position, of which only the rounded distance goes out; the original photo, of which only the 3:4 version is sent; the draw of the spot, computed on the phone; the reminder time, a local notification. On the right, four packets leave for Firebase: e-mail and password in Authentication, read by nobody else; nickname, points and streak in joueurs, read by signed-in players; spot, distance and time in validations; the JPEG in photos, readable only by those who validated that day. Deleting your account erases everything.',
+  ));
+}
+
+// --- 14. La stack ---------------------------------------------------------
+
+function stack() {
+  const D = 16;
+  const W = 1280;
+  const paquets = [
+    ['cloud_firestore 6.10', t('joueurs, validations, photos, en transaction', 'players, validations, photos, in one transaction'), t('Serveur', 'Server')],
+    ['firebase_auth 6.7', t('le compte, par e-mail et mot de passe', 'the account, by e-mail and password'), t('Serveur', 'Server')],
+    ['flutter_local_notifications 22.3', t('le rappel, programmé sept jours d’avance', 'the reminder, scheduled seven days ahead'), t('Appareil', 'Device')],
+    ['image_picker 1.2 · image 4.10', t('l’appareil photo, puis le recadrage 3:4', 'the camera, then the 3:4 crop'), t('Appareil', 'Device')],
+    ['geolocator 14.0', t('la position, et le drapeau « fictive »', 'the position, and the “mocked” flag'), t('Appareil', 'Device')],
+    ['flutter_map 8.3 · OpenStreetMap', t('la carte, sans clé d’API', 'the map, with no API key'), t('Écran', 'Screen')],
+    ['go_router 18.0', t('les écrans, et la redirection sans compte', 'the screens, and the signed-out redirect'), t('Écran', 'Screen')],
+    ['flutter_riverpod 3.4', t('l’état : jour, lieu, position, distance', 'the state: day, spot, position, distance'), t('Écran', 'Screen')],
+    ['Flutter 3.47 · Dart 3.13', t('toute l’application, un seul code', 'the whole app, one codebase'), t('Socle', 'Base')],
+  ];
+  const lh = 50;
+  const y0 = 96;
+  const H = y0 + paquets.length * (lh + 8) + 40;
+  let b = etape(60, 46, t('LA STACK', 'THE STACK'), t('Paquet par paquet, du socle au serveur', 'Package by package, from the base to the server'));
+  const n = paquets.length;
+  paquets.forEach(([nom, role, couche], i) => {
+    const y = y0 + i * (lh + 8);
+    const a = 0.04 + (n - 1 - i) * 0.08; // on monte depuis le socle
+    const socle = i === n - 1;
+    b += pendant(D, a, 0.95, `<g>${move(D, [[0, '0 16'], [a, '0 16'], [a + 0.03, '0 0'], [1, '0 0']])}` +
+      `<rect x="60" y="${y}" width="1160" height="${lh}" rx="12" fill="${socle ? C.soft : C.card}" stroke="${socle ? C.accent : C.line}" stroke-opacity="${socle ? 0.6 : 1}"/>` +
+      text(84, y + 31, nom, { size: 16, color: socle ? C.pale : C.title, font: MONO, weight: 700 }) +
+      text(520, y + 31, role, { size: 15, color: C.text }) +
+      `<rect x="1080" y="${y + 13}" width="120" height="24" rx="12" fill="${C.soft}"/>` +
+      text(1140, y + 30, couche, { size: 12.5, color: C.accent, anchor: 'middle', weight: 600 }) +
+      '</g>', 0.02);
+  });
+  return svg(W, H, b, t(
+    "Animation : la stack de BeVannes se monte paquet par paquet, du socle au serveur. Flutter 3.47 et Dart 3.13 pour toute l'application. flutter_riverpod 3.4 pour l'état : jour, lieu, position, distance. go_router 18 pour les écrans et la redirection sans compte. flutter_map 8.3 et OpenStreetMap pour la carte, sans clé d'API. geolocator 14 pour la position et le drapeau de position fictive. image_picker et image pour l'appareil photo et le recadrage 3:4. flutter_local_notifications pour le rappel, programmé sept jours d'avance. firebase_auth pour le compte, cloud_firestore pour les joueurs, les validations et les photos.",
+    'Animation: the BeVannes stack builds up package by package, from the base to the server. Flutter 3.47 and Dart 3.13 for the whole app. flutter_riverpod 3.4 for state: day, spot, position, distance. go_router 18 for the screens and the signed-out redirect. flutter_map 8.3 and OpenStreetMap for the map, with no API key. geolocator 14 for the position and the mocked-location flag. image_picker and image for the camera and the 3:4 crop. flutter_local_notifications for the reminder, scheduled seven days ahead. firebase_auth for the account, cloud_firestore for players, validations and photos.',
+  ));
+}
+
+// --- 15. Les couches, traversées par une validation -----------------------
+
+function couches() {
+  const D = 14;
+  const W = 1280;
+  const H = 560;
+  const niveaux = [
+    ['lib/ui', t('9 fichiers · 3 586 lignes', '9 files · 3,586 lines'), t('les écrans et leurs animations', 'the screens and their animations')],
+    ['lib/providers.dart', t('1 fichier · 125 lignes', '1 file · 125 lines'), t('l’état partagé, par Riverpod', 'the shared state, through Riverpod')],
+    ['lib/data', t('7 fichiers · 820 lignes', '7 files · 820 lines'), t('Firebase ou démo, GPS, photo, rappels', 'Firebase or demo, GPS, photo, reminders')],
+    ['lib/domain', t('5 fichiers · 233 lignes', '5 files · 233 lines'), t('les règles du jeu, en Dart pur, testées', 'the game rules, in plain Dart, tested')],
+  ];
+  // Ce que touche une validation, couche par couche.
+  const pas = [
+    [0, 'EcranPhoto', t('« Prendre la photo »', '“Take the photo”')],
+    [1, 'positionProvider', t('la position suivie', 'the tracked position')],
+    [2, 'Localisation.actuelle()', t('une mesure fraîche', 'a fresh fix')],
+    [3, 'distanceMetres()', t('20 m ≤ 100 m', '20 m ≤ 100 m')],
+    [2, 'recadrerPhoto()', t('3:4, 900 × 1200', '3:4, 900 × 1200')],
+    [3, 'serieApres() · gainPour()', t('série 4, +16', 'streak 4, +16')],
+    [2, 'FirebaseDepot.valider()', t('une seule transaction', 'a single transaction')],
+  ];
+  const lx = 60;
+  const lw = 470;
+  const lh = 92;
+  const y0 = 100;
+  let b = etape(lx, 46, 'ARCHITECTURE', t('Quatre couches, traversées par une validation', 'Four layers, crossed by one validation'));
+  niveaux.forEach(([nom, taille, role], i) => {
+    const y = y0 + i * (lh + 12);
+    const dom = i === 3;
+    b += `<rect x="${lx}" y="${y}" width="${lw}" height="${lh}" rx="16" fill="${dom ? C.soft : C.card}" stroke="${dom ? C.accent : C.line}" stroke-opacity="${dom ? 0.6 : 1}"/>`;
+    b += text(lx + 22, y + 36, nom, { size: 17, color: dom ? C.pale : C.title, font: MONO, weight: 700 });
+    b += text(lx + lw - 22, y + 36, taille, { size: 13, color: C.faint, anchor: 'end', font: MONO });
+    b += text(lx + 22, y + 66, role, { size: 15, color: C.text });
+  });
+  // Le jeton qui descend et remonte, et le journal à droite.
+  const jx = 600;
+  const cy = (i) => y0 + i * (lh + 12) + lh / 2;
+  const jeton = lx + lw + 35;
+  const d0 = 0.05;
+  const dp = 0.1;
+  const etapes = [[0, `${jeton} ${cy(0)}`]];
+  pas.forEach(([niv], i) => {
+    const a = d0 + i * dp;
+    etapes.push([a, `${jeton} ${cy(niv)}`], [a + dp * 0.6, `${jeton} ${cy(niv)}`]);
+  });
+  b += `<circle r="9" fill="url(#degrade)" opacity="0">${move(D, etapes)}${anim(D, 'opacity', [[0, 0], [d0 - 0.02, 0], [d0, 1], [0.8, 1], [0.84, 0]])}</circle>`;
+  b += text(jx, y0 + 6, t('CE QUE TOUCHE UN APPUI', 'WHAT ONE TAP TOUCHES'), { size: 12, color: C.faint, font: MONO, weight: 700, extra: 'letter-spacing="1.5"' });
+  pas.forEach(([, fn, quoi], i) => {
+    const a = d0 + i * dp;
+    const y = y0 + 24 + i * 56;
+    b += pendant(D, a, 0.95, `<rect x="${jx}" y="${y}" width="620" height="44" rx="11" fill="${C.card}" stroke="${C.line}"/>` +
+      text(jx + 18, y + 28, fn, { size: 14.5, color: C.title, font: MONO, weight: 700 }) +
+      text(jx + 602, y + 28, quoi, { size: 14, color: C.accent, anchor: 'end' }), 0.015);
+  });
+  return svg(W, H, b, t(
+    "Animation : les quatre couches de BeVannes, lib/ui, providers.dart, lib/data et lib/domain, traversées par un appui sur « Prendre la photo ». Le jeton part de EcranPhoto, passe par positionProvider, demande une mesure fraîche à Localisation.actuelle, descend au domaine pour distanceMetres, 20 mètres sur 100 permis, remonte pour recadrerPhoto en 3:4, redescend pour serieApres et gainPour, série 4 et +16, et finit dans FirebaseDepot.valider, une seule transaction. Le domaine, 5 fichiers et 233 lignes de Dart pur, est la couche testée à part.",
+    'Animation: the four BeVannes layers, lib/ui, providers.dart, lib/data and lib/domain, crossed by a tap on “Take the photo”. The token leaves EcranPhoto, goes through positionProvider, asks Localisation.actuelle for a fresh fix, goes down to the domain for distanceMetres, 20 metres out of 100 allowed, back up for recadrerPhoto in 3:4, down again for serieApres and gainPour, streak 4 and +16, and ends in FirebaseDepot.valider, a single transaction. The domain, 5 files and 233 lines of plain Dart, is the layer tested on its own.',
+  ));
+}
+
+// --- 16. Le modèle de données ---------------------------------------------
+
+function modele() {
+  const D = 12;
+  const W = 1280;
+  const H = 520;
+  const blocs = [
+    [60, 'Authentication', t('les comptes', 'the accounts'), [['uid', 'string'], ['email', 'string'], [t('mot de passe', 'password'), t('haché', 'hashed')]]],
+    [360, 'joueurs/{uid}', t('un par joueur', 'one per player'), [['pseudo', 'string'], ['points', 'int'], ['serie', 'int'], ['meilleureSerie', 'int'], ['validations', 'int'], ['dernierJour', 'int'], ['creeLe', 'timestamp']]],
+    [660, 'validations/{jour}_{uid}', t('une par joueur et par jour', 'one per player and day'), [['uid · pseudo', 'string'], ['jour', 'int'], ['lieu', 'string'], ['distance', '0 … 100'], ['gain · serie', 'int'], ['photo', 'photos/{id}'], ['moment', 'timestamp']]],
+    [960, 'photos/{jour}_{uid}', t('le JPEG de la validation', 'the validation’s JPEG'), [['uid', 'string'], ['jour', 'int'], ['jpeg', t('octets < 900 Ko', 'bytes < 900 KB')]]],
+  ];
+  const bw = 262;
+  const y0 = 100;
+  let b = etape(60, 46, t('LE MODÈLE DE DONNÉES', 'THE DATA MODEL'), t('Trois collections Firestore, un même identifiant', 'Three Firestore collections, one shared id'));
+  blocs.forEach(([x, nom, sous, champs], i) => {
+    const h = 82 + champs.length * 30;
+    const a = 0.04 + i * 0.12;
+    b += pendant(D, a, 0.95, `<rect x="${x}" y="${y0}" width="${bw}" height="${h}" rx="16" fill="${C.card}" stroke="${i === 0 ? C.line : C.accent}" stroke-opacity="${i === 0 ? 1 : 0.45}"/>` +
+      text(x + 18, y0 + 30, nom, { size: 14.5, color: i === 0 ? C.title : C.accent, font: MONO, weight: 700 }) +
+      text(x + 18, y0 + 52, sous, { size: 13, color: C.faint }) +
+      `<line x1="${x + 18}" x2="${x + bw - 18}" y1="${y0 + 66}" y2="${y0 + 66}" stroke="${C.line}"/>` +
+      champs.map(([c, ty], j) => text(x + 18, y0 + 96 + j * 30, c, { size: 14, color: C.title, font: MONO }) + text(x + bw - 18, y0 + 96 + j * 30, ty, { size: 13, color: C.text, anchor: 'end', font: MONO })).join(''));
+  });
+  // Les liens : uid, puis la photo.
+  const lien = (x1, x2, y, a, lib, y2 = y) =>
+    pendant(D, a, 0.95, `<path d="M${x1} ${y} H${(x1 + x2) / 2} V${y2} H${x2}" fill="none" stroke="${C.accent}" stroke-width="2" stroke-dasharray="5 4"/><circle cx="${x2}" cy="${y2}" r="4" fill="${C.accent}"/>` + text((x1 + x2) / 2, y2 - 10, lib, { size: 11, color: C.faint, anchor: 'middle', font: MONO }));
+  b += lien(60 + bw, 360, y0 + 91, 0.5, 'uid');
+  b += lien(360 + bw, 660, y0 + 91, 0.58, 'uid');
+  b += lien(660 + bw, 960, y0 + 91 + 5 * 30, 0.66, 'id', y0 + 91);
+  b += pendant(D, 0.74, 0.95, text(60, 470, t('L’identifiant {jour}_{uid} fait la règle : une seule validation par joueur et par jour, et sa photo porte le même nom.', 'The {jour}_{uid} id is the rule: a single validation per player and per day, and its photo carries the same name.'), { size: 15, color: C.title }));
+  return svg(W, H, b, t(
+    "Animation : le modèle de données de BeVannes. Authentication garde l'uid, l'e-mail et le mot de passe haché. joueurs/{uid} : pseudo, points, série, meilleure série, validations, dernier jour et date de création. validations/{jour}_{uid} : uid, pseudo, jour, lieu, distance de 0 à 100, gain, série, chemin de la photo et moment. photos/{jour}_{uid} : uid, jour et le JPEG en octets, moins de 900 Ko. Des liens relient les uid et la photo. L'identifiant {jour}_{uid} impose une seule validation par joueur et par jour.",
+    'Animation: the BeVannes data model. Authentication keeps the uid, the e-mail and the hashed password. joueurs/{uid}: nickname, points, streak, best streak, validations, last day and creation date. validations/{jour}_{uid}: uid, nickname, day, spot, distance from 0 to 100, gain, streak, photo path and moment. photos/{jour}_{uid}: uid, day and the JPEG as bytes, under 900 KB. Links join the uids and the photo. The {jour}_{uid} id enforces a single validation per player and per day.',
+  ));
+}
+
+// --- 17. Les tests --------------------------------------------------------
+
+function tests() {
+  const D = 14;
+  const W = 1280;
+  const ok = '#3DD68C';
+  const fichiers = [
+    ['test/jour_test.dart', [t('le numéro du jour suit la date locale', 'the day number follows the local date'), t('le tirage est le même partout : valeurs figées', 'the draw is the same everywhere: frozen values'), t('chaque lieu passe une fois par cycle', 'each spot comes once per cycle'), t('jamais deux fois le même lieu deux jours de suite', 'never the same spot two days running'), t('un seul lieu : toujours lui', 'a single spot: always that one'), t('le rappel tombe entre 10 h et 19 h 59, et varie', 'the reminder falls between 10:00 and 19:59, and varies')]],
+    ['test/geo_test.dart', [t('distance nulle sur place', 'zero distance on the spot'), t('cathédrale ↔ porte Saint-Vincent : 380 m', 'cathedral ↔ Porte Saint-Vincent: 380 m'), t('Vannes ↔ Rennes : 100 km', 'Vannes ↔ Rennes: 100 km'), t('distances lisibles', 'readable distances')]],
+    ['test/score_test.dart', [t('la série continue le lendemain, repart à 1 sinon', 'the streak goes on the next day, else back to 1'), t('gain : 10 points, +2 par jour, plafonné à +10', 'gain: 10 points, +2 a day, capped at +10'), t('la série tombe à zéro après un jour manqué', 'the streak drops to zero after a missed day')]],
+    ['test/demo_depot_test.dart', [t('valider rapporte les points, une fois par jour', 'validating pays out once a day'), t('le classement est trié par points', 'the leaderboard is sorted by points'), t('pseudos', 'nicknames')]],
+  ];
+  const tous = fichiers.flatMap((f) => f[1]);
+  const total = tous.length;
+  const H = 600;
+  let b = etape(60, 46, 'FLUTTER TEST', t(`${total} tests, sur les règles du jeu`, `${total} tests, on the game rules`));
+  // Le compteur et le ruban de cases.
+  const d0 = 0.05;
+  const dp = 0.78 / total;
+  for (let n = 0; n <= total; n++) {
+    const a = n === 0 ? 0 : d0 + (n - 1) * dp;
+    const z = n === total ? 0.96 : d0 + n * dp;
+    b += net(D, a, z, text(60, 150, `${n}`, { size: 60, color: n === total ? ok : C.title, weight: 800 }) + text(n >= 10 ? 138 : 104, 150, `/ ${total}`, { size: 22, color: C.faint, font: MONO }));
+  }
+  for (let n = 0; n < total; n++) {
+    const a = d0 + n * dp;
+    b += `<rect x="${60 + n * 26}" y="178" width="20" height="20" rx="5" fill="${C.card2}"><animate attributeName="fill" dur="${D}s" repeatCount="indefinite" calcMode="discrete" keyTimes="0;${k(a)};${k(0.96)}" values="${C.card2};${ok};${C.card2}"/></rect>`;
+  }
+  // Les noms, fichier par fichier, en deux colonnes.
+  const cols = [[fichiers[0], fichiers[2]], [fichiers[1], fichiers[3]]];
+  cols.forEach((col, c) => {
+    let y = 252;
+    const x = 60 + c * 610;
+    col.forEach(([nom, noms]) => {
+      b += text(x, y, nom, { size: 13, color: C.faint, font: MONO, weight: 700 });
+      y += 30;
+      noms.forEach((l) => {
+        const a = d0 + tous.indexOf(l) * dp;
+        b += pendant(D, a, 0.96, text(x, y, '✓', { size: 15, color: ok, weight: 700 }) + text(x + 24, y, l, { size: 15, color: C.title }), 0.01);
+        y += 27;
+      });
+      y += 24;
+    });
+  });
+  return svg(W, H, b, t(
+    `Animation : flutter test, ${total} tests qui passent au vert un à un. jour_test : le numéro du jour suit la date locale, le tirage est le même partout avec des valeurs figées, chaque lieu passe une fois par cycle, jamais deux fois le même lieu deux jours de suite, un seul lieu revient toujours, le rappel tombe entre 10 h et 19 h 59. geo_test : distance nulle sur place, 380 mètres de la cathédrale à la porte Saint-Vincent, 100 kilomètres jusqu'à Rennes, distances lisibles. score_test : la série continue ou repart à 1, le gain plafonné, la série tombe à zéro après un jour manqué. demo_depot_test : une validation par jour, le classement trié, les pseudos.`,
+    `Animation: flutter test, ${total} tests turning green one by one. jour_test: the day number follows the local date, the draw is the same everywhere with frozen values, each spot comes once per cycle, never the same spot two days running, a single spot always comes back, the reminder falls between 10:00 and 19:59. geo_test: zero distance on the spot, 380 metres from the cathedral to Porte Saint-Vincent, 100 kilometres to Rennes, readable distances. score_test: the streak goes on or back to 1, the capped gain, the streak drops to zero after a missed day. demo_depot_test: one validation a day, the sorted leaderboard, nicknames.`,
+  ));
+}
+
+// --- 18. Les versions -----------------------------------------------------
+
+function versions() {
+  const D = 12;
+  const W = 1280;
+  const H = 540;
+  const liste = [
+    ['2.0.0', t('24 sept. · 11 h 43', '24 Sept · 11:43'), t('La réécriture, en mode démo', 'The rewrite, in demo mode'), t('Flutter à la place du prototype FlutterFlow, une communauté fictive, la téléportation.', 'Flutter instead of the FlutterFlow prototype, a made-up community, teleporting.')],
+    ['2.0.1', t('24 sept. · 12 h 34', '24 Sept · 12:34'), t('Les animations', 'The animations'), t('Radar, jauge d’approche, reflet sur le bouton, coche et confettis, écrans bloc par bloc.', 'Radar, approach gauge, button shine, tick and confetti, screens block by block.')],
+    ['2.1.0', t('24 sept. · 17 h 27', '24 Sept · 17:27'), t('Deux applications', 'Two apps'), t('Le vrai jeu relié à Firebase, et la démo installée à côté, sans se gêner.', 'The real game wired to Firebase, and the demo installed next to it.')],
+  ];
+  const x = 60;
+  const w = 1160;
+  const h = 96;
+  const socleY = 430;
+  let b = etape(x, 46, t('LES VERSIONS', 'THE VERSIONS'), t('Chacune s’installe par-dessus la précédente', 'Each one installs over the previous one'));
+  // Le socle : la clé de signature, qui ne change jamais.
+  b += `<rect x="${x}" y="${socleY}" width="${w}" height="64" rx="14" fill="${C.soft}" stroke="${C.accent}" stroke-opacity=".6"/>`;
+  b += `<g fill="none" stroke="${C.accent}" stroke-width="2" stroke-linecap="round"><circle cx="${x + 38}" cy="${socleY + 32}" r="9"/><path d="M${x + 47} ${socleY + 32} H${x + 70} M${x + 62} ${socleY + 32} v7 M${x + 68} ${socleY + 32} v5"/></g>`;
+  b += text(x + 92, socleY + 28, t('La même clé de signature', 'The same signing key'), { size: 16, color: C.pale, weight: 700 });
+  b += text(x + 92, socleY + 49, t('certificat SHA-256 9a8c6764…0f00feeb, CN=BeVannes', 'certificate SHA-256 9a8c6764…0f00feeb, CN=BeVannes'), { size: 13.5, color: C.text, font: MONO });
+  liste.forEach(([v, date, titre, detail], i) => {
+    const y = socleY - (i + 1) * (h + 12);
+    const a = 0.06 + i * 0.2;
+    const derniere = i === liste.length - 1;
+    b += `<g opacity="0">${appear(D, a, 0.94, 0.02)}<g>${move(D, [[0, '0 -60'], [a, '0 -60'], [a + 0.05, '0 0'], [1, '0 0']])}` +
+      `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="16" fill="${C.card}" stroke="${derniere ? C.accent : C.line}" stroke-opacity="${derniere ? 0.8 : 1}"/>` +
+      text(x + 26, y + 42, v, { size: 26, color: derniere ? C.accent : C.title, weight: 800, font: MONO }) +
+      text(x + 26, y + 72, date, { size: 13, color: C.faint, font: MONO }) +
+      text(x + 200, y + 42, titre, { size: 18, color: C.title, weight: 700 }) +
+      text(x + 200, y + 70, detail, { size: 15, color: C.text }) +
+      (derniere ? `<rect x="${x + w - 130}" y="${y + 20}" width="106" height="26" rx="13" fill="${C.soft}"/>` + text(x + w - 77, y + 38, t('en cours', 'current'), { size: 13, color: C.accent, anchor: 'middle', weight: 600 }) : '') +
+      '</g></g>';
+  });
+  return svg(W, H, b, t(
+    "Animation : les trois versions de BeVannes, publiées le 24 septembre 2026, tombent l'une sur l'autre, comme elles s'installent par-dessus sur le téléphone. En bas, le socle ne bouge pas : la même clé de signature, certificat SHA-256 9a8c6764…0f00feeb. 2.0.0 à 11 h 43 : la réécriture en Flutter, à la place du prototype FlutterFlow, en mode démo. 2.0.1 à 12 h 34 : les animations, radar, jauge, reflet, coche et confettis. 2.1.0 à 17 h 27, la version en cours : deux applications, le vrai jeu relié à Firebase et la démo à côté.",
+    'Animation: the three BeVannes versions, released on 24 September 2026, fall onto one another, the way they install over each other on the phone. At the bottom, the base never moves: the same signing key, certificate SHA-256 9a8c6764…0f00feeb. 2.0.0 at 11:43: the Flutter rewrite, replacing the FlutterFlow prototype, in demo mode. 2.0.1 at 12:34: the animations, radar, gauge, shine, tick and confetti. 2.1.0 at 17:27, the current version: two apps, the real game wired to Firebase and the demo next to it.',
+  ));
+}
+
 // --- Écriture -------------------------------------------------------------
 
 fs.mkdirSync(OUT, { recursive: true });
-for (const [nom, f] of Object.entries({ vitrine, tirage, approche, mur, rappel, lieux, parcours, triche, serie, cadrage })) {
+for (const [nom, f] of Object.entries({ vitrine, tirage, approche, mur, rappel, lieux, parcours, triche, serie, cadrage, fonctionnalites, ecrans, confidentialite, stack, couches, modele, tests, versions })) {
   const contenu = f();
   fs.writeFileSync(path.join(OUT, `${nom}.svg`), contenu);
   console.log(`  ${nom}.svg  ${(contenu.length / 1024).toFixed(1)} Ko`);
